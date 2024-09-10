@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colorizing the Prokudin-Gorskii Collection</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <img class="header-image" src='media/out_onion_church_uncropped.jpg' alt='Header Image'>
+        <div class="header-overlay"></div>
+        <div class="title-container">
+            <h1 class="title">Colorizing the Prokudin-Gorskii Image Collection</h1>
+            <h2 class="subtitle"> by Daniel Hodde</h2>
+        </div>
+    </header>
+    
+    <main>
+        <section id="introduction">
+            <h2>Introduction</h2>
+            <p>From 1909-1915, with support from Tsar Nicholas II, scientist and photographer Sergei Mikhailovich 
+                Prokudin-Gorskii set out to document the russian empire and did so by taking thousands of color 
+                photographs. There was no way to take color photographs however he was convinced that color 
+                photography was the wave of the future. He had the idea to record three separate exposures onto 
+                glass plates using a red, green and blue filter. At the time there was also no way of printing
+                or viewing these images, but he envisioned a way to project these images on top of each other to
+                view them in color. Although his visions never came to life his glass plate images survived and 
+                were purchased by the library of congress and made available online. The goal of this project is
+                to take these digitized glass plate images and align and combine them to produce color images. 
+
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='media/cathedral.jpg' alt='Cathedral Originals'>
+                </div>
+                <div class="image-item">
+                    <img src='media/monastery.jpg' alt='Monastery Originals'>
+                </div>
+                <div class="image-item">
+                    <img src='media/tobolsk.jpg' alt='Tobolsk Originals'>
+                </div>
+            </div>
+            <p class="image-caption">Glass Plate Images with Red, Green and Blue Filters</p>
+        </section>
+        
+        <section id="approach">
+            <h2>Approach</h2>
+            <p>Each digitized image contains three glass plates stacked on top of each other in blue, green, red order. The 
+                first step in colorizing these images is to split the image vertically in three equal parts to separate these
+                color channels. 
+                <br><br>
+                Next, in order to align the images, one can fix one of the channels, in my case the blue channel, and displace
+                the other channels to align with the fixed channel. The simplest way to achieve this is to exhaustively search
+                over a window of possible displacements and score each displacement according to alignment metric. At first 
+                I tried to use normalized cross-correlation (NCC) for my alignment which computes a dot product between two 
+                flattened and normalized images providing a score that represents the images similarity, however in practice
+                I found this metric performed poorly. Afterwards I tried using the L2 Norm (Euclidean Distance), which instead 
+                computes a sum over pixel values, and serves the same purpose in terms of scoring. I found this metric to produce
+                much better results, and thus decided to use it as my alignment metric going forward. 
+                <br><br>
+                Although I found the L2 Norm to perform better as a metric, due to the nature of glass plate images a lot
+                of noise is present at the edge of the images that skew the results of the metric if they are included. To solve
+                this I computed the L2 Norm on the image after its edges had been cropped by 20% of the size of the image (a number 
+                which I found through trial and error).
+                <br><br>
+                This method works well when performed on small image formats like jpg, however the exhaustive search proves to be 
+                extremely costly when performed on larger image formats such as tif. To speed up the search I implemented an algorithm 
+                that uses image pyramids. Image pyramids represent the image at multiple scales, in my case each level represent a 
+                scale by a factor of two. I implemented my algorithm in an iterative manner that first creates an image pyramid by scaling
+                down the image until it reaches a size roughly equivalent to the size of the smaller jpg images that performed well. I
+                then iterated backwards over this pyramid I created so I start at the furthest scaled down image and work up until reaching
+                the original image. Performing a search on a scaled down version of the image is less computationally intensive, 
+                and we can use this search to create a guess of the correct displacement that is used as a starting place
+                to search scaled up images. A key realization in achieving further speedup was that after the intial scaled down search, 
+                assuming the initial search window was large enough to find the correct displacement at that level, subsequent levels
+                can only be one further pixel away in their displacement. 
+                <br><br>
+                With these optimizations the image alignment algorithm performed well on all images except for the image of Emir, which
+                contains too much blue within the image, leaving very little data in the other color channels to align on and thus I was
+                not able to produce a perfect alignment. Alternative alignments are explored later in this project that correct this. 
+
+            </p>
+        </section>
+        
+        <section id="results">
+            <h2>Results</h2>
+            <p>Below are the results of colorizing a set of Prudukin-Gorskii images using my base alignment algorithm with image pyramids. 
+                I used a search window of [-50, 50] for the initial coarse search and [-1, 1] for all subsequent scales. The initial window
+                was determined through trial and error as a window that was large enough to find the correct displacement at the coarsest scale.
+                Before displaying the images I also applied a fixed crop of 8% of the image, which I found to be just enough to get rid of any 
+                artifacts on the edges of the image without removing too much of the contents.
+            </p>
+            <table class="results-table">
+                <tr>
+                    <tr>
+                        <th colspan="3">Small Images</th>
+                    </tr>
+                </tr>
+                <tr>
+                    <td><img src='media/out_cathedral.jpg' alt='Colorized Cathedral'><p>Cathedral <br> Green: (2, 5), Red: (3, 12)</p></td>
+                    <td><img src='media/out_monastery.jpg' alt='Colorized Monastery'><p>Monastery <br> Green: (2, -3), Red: (2, 3)</p></td>
+                    <td><img src='media/out_tobolsk.jpg' alt='Colorized Tobolsk'><p>Tobolsk <br> Green: (3, 3), Red: (3, 7)</p></td>
+                </tr>
+            </table>
+            <table class="results-table">
+                <tr>
+                    <tr>
+                        <th colspan="3">Large Images</th>
+                    </tr>
+                </tr>
+                <tr>
+                    <td><img src='media/out_church.jpg' alt='Colorized Church'><p>Church <br> Green: (4, 24), Red: (-4, 58)</p></td>
+                    <td><img src='media/out_emir.jpg' alt='Colorized Emir'><p>Emir <br> Green: (24, 48), Red: (43, 60)</p></td>
+                    <td><img src='media/out_harvesters.jpg' alt='Colorized Harvesters'><p>Harvesters <br> Green: (16, 58), Red: (14, 123)</p></td>
+                <tr>
+                    <td><img src='media/out_icon.jpg' alt='Colorized Icon'><p>Icon <br> Green: (16, 40), Red: (22, 88)</p></td>
+                    <td><img src='media/out_lady.jpg' alt='Colorized Lady'><p>Lady <br> Green: (8, 54), Red: (12, 112)</p></td>
+                    <td><img src='media/out_melons.jpg' alt='Colorized Melons'><p>Melons <br> Green: (8, 80), Red: (12, 178)</p></td>
+                </tr>
+                <tr>
+                    <td><img src='media/out_onion_church.jpg' alt='Colorized Onion Church'><p>Onion Church <br> Green: (26, 51), Red: (36, 108)</p></td>
+                    <td><img src='media/out_sculpture.jpg' alt='Colorized Sculpture'><p>Sculpture <br> Green: (-12, 32), Red: (-28, 140)</p></td>
+                    <td><img src='media/out_self_portrait.jpg' alt='Colorized Self Portrait'><p>Self Portrait <br> Green: (28, 78), Red: (36, 175)</p></td>
+                </tr>
+                <tr>
+                    <td><img src='media/out_three_generations.jpg' alt='Colorized Three Generations'><p>Three Generations <br> Green: (14, 52), Red: (12, 110)</p></td>
+                    <td><img src='media/out_train.jpg' alt='Colorized Train'><p>Train <br> Green: (6, 42), Red: (32, 86)</p></td>
+                </tr>
+            </table>
+        </section>
+
+        <section id="Additional Images">
+            <h2>Additional Images</h2>
+            <p>I also performed my base alignment algorithm on an additional selection of Prokudin-Gorskii images that appealed to me.</p>
+            <table class="results-table">
+                <tr>
+                    <tr>
+                        <th colspan="3">Additional Images</th>
+                    </tr>
+                </tr>
+                <tr>
+                    <td><img src='media/out_canal.jpg' alt='Colorized Canal'><p>Canal</p>Green: (24, 28), Red: (48, 47)</td>
+                    <td><img src='media/out_capri.jpg' alt='Colorized Capri'><p>Capri <br> Green: (-16, 32), Red: (-25, 78)</p></td>
+                    <td><img src='media/out_conservatory.jpg' alt='Colorized Conservatory'><p>Conservatory <br> Green: (28, 59), Red: (34, 124)</p></td>
+                <tr>
+                    <td><img src='media/out_estate.jpg' alt='Colorized Estate'><p>Estate <br> Green: (-12, 64), Red: (-28, 118)</p></td>
+                    <td><img src='media/out_lastochinko.jpg' alt='Colorized Lastochinko'><p>Lastochinko <br> Green: (-4, -4), Red: (-9, 75)</p></td>
+                    <td><img src='media/out_milan_cathedral.jpg' alt='Colorized Milan Cathedral'><p>Milan Cathedral <br> Green: (12, 56), Red: (24, 124)</p></td>
+                </tr>
+            </table>
+        </section>
+        
+        <section id="bells and whistles">
+            <h2>Bells and Whistles</h2>
+            <h3>Sobel Edge Detection</h3>
+            <p>As mentioned previously, the L2 Norm did not perform well enough as a metric in the case of the image of Emir. To fix
+                this I implemented Sobel edge detection which applies the Sobel kernels to a grayscale version of the image through
+                convolution and computes the magnitude of the gradient at each pixel. This performed much better than L2 in this case.
+            </p>
+            <div class="image-comparison">
+                <div class="column">
+                    <h2>Before</h2>
+                    <img src="media/out_emir.jpg" alt="Before Emir">
+                    <p>Green: (24, 48), Red: (43, 60)</p>
+                </div>
+                <div class="column">
+                    <h2>After</h2>
+                    <img src="media/out_edge_wb_emir.jpg" alt="After Emir">
+                    <p>Green: (24, 48), Red: (40, 106)</p>
+                </div>
+            </div>
+
+            <h3>White Balancing</h3>
+            <p>Many of the images have a warm hue to them, and in order to correct this I decided to apply white balancing. In 
+                order to achieve this I used the gray-world assumption. This assumption speculates that in an image with a
+                variety of colors, the average color in the image is gray, or in other words that on average each color 
+                channel is equal in magnitude. To implement this I first calculate the average intensity across all pixels and 
+                color channels in the image. Then dividing by the average rgb values yields a scalar for each color channel that 
+                I can element wise multiply each channel by and effectively white balance the image. 
+            </p>
+            <div class="image-comparison">
+                <div class="column">
+                    <h2>Before</h2>
+                    <img src="media/out_estate.jpg" alt="Before Estate">
+                    <img src="media/out_harvesters.jpg" alt="Before Harvesters">
+                    <img src="media/out_lastochinko.jpg" alt="Before Lastochinko">
+                    <img src="media/out_melons.jpg" alt="Before Harvesters">
+                </div>
+                <div class="column">
+                    <h2>After</h2>
+                    <img src="media/out_wb_estate.jpg" alt="After Estate">
+                    <img src="media/out_wb_harvesters.jpg" alt="After Harvesters">
+                    <img src="media/out_wb_lastochinko.jpg" alt="After Lastochinko">
+                    <img src="media/out_wb_melons.jpg" alt="After Melons">
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Daniel Hodde</p>
+    </footer>
+</body>
+</html>
