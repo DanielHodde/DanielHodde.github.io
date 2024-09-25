@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filters and Frequencies</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    <header class="header">
+        <div class="image-container">
+            <img class="header-image" src="media/cameraman.png" alt="Cameraman">
+            <img class="header-image" src="media/horizontal_edge_img.jpg" alt="Horizontal edge image">
+            <img class="header-image" src="media/vertical_edge_img.jpg" alt="verrtical edge image">
+            <img class="header-image" src="media/gradient_edge_img.jpg" alt="gradient edge image">
+            <img class="header-image" src="media/edge_img.jpg" alt="edge image">
+        </div>
+        <div class="header-overlay"></div>
+        <div class="title-container">
+            <h1 class="title">Filters and Frequencies</h1>
+            <h2 class="subtitle"> by Daniel Hodde</h2>
+        </div>
+    </header>
+    
+    <main>
+        <section id="introduction">
+            <h2>Finite Difference Operator</h2>
+            <p>Let \( I \) be the input image. The gradient magnitude edge image is
+                obtained by first convolving \( I \) with the finite difference filters
+                \( D_x \) and \( D_y \), which capture changes in intensity in the horizontal
+                and vertical directions, respectively. The vertical and horizontal edge
+                information is then combined using the gradient magnitude formula
+                \( G = \sqrt{(D_x^2 + D_y^2)} \). To finalize the edge detection, we binarize
+                the gradient magnitude image by setting all pixel values greater than a chosen
+                threshold \( T \) to 255 (white) and all values less than or equal to \( T \)
+                to 0 (black). In this case the value that was determined to work well for binarization
+                was 75. The resulting binarized edge map for the cameraman image, as well
+                as the intermediate steps to get there are displayed below. 
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Cameraman</p>
+                    <img src='media/cameraman.png' alt='Cameraman'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Finite Difference Horizontal</p>
+                    <img src='media/fin_diff_horizontal_edge_img.jpg' alt='Finite Difference Horizontal'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Finite Difference Vertical</p>
+                    <img src='media/fin_diff_vertical_edge_img.jpg' alt='Finite Difference Vertical'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Finite Difference Gradient</p>
+                    <img src='media/fin_diff_gradient_edge_img.jpg' alt='Finite Difference Gradient'>                    
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Finite Difference Edge</p>
+                    <img src='media/fin_diff_edge_img.jpg' alt='Finite Difference Edge'>                                        
+                </div>
+            </div>            
+            <p class="image-caption">Edge Image from Finite Difference Operator</p>
+        </section>
+        
+        <section id="Derivative of Gaussian">
+            <h2>Derivative of Gaussian</h2>
+            <p>
+                As you may notice the final edge image that results from simply convolving with the finite difference operator 
+                contains a lot of noise. To compensate for this we can first blur the image by convolving with a Gaussian
+                filter. The gradient still needs to be binarized, however, it was determined that a lower threshold of 25
+                works better for this case. The resulting edge image has wider edges and much less noise
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Cameraman</p>
+                    <img src='media/cameraman.png' alt='Cameraman'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Horizontal Edge</p>
+                    <img src='media/horizontal_edge_img.jpg' alt='Horizontal'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Vertical Edge</p>
+                    <img src='media/vertical_edge_img.jpg' alt='Vertical'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Gradient</p>
+                    <img src='media/gradient_edge_img.jpg' alt='Gradient'>                    
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Edge Image</p>
+                    <img src='media/edge_img.jpg' alt='Edge Image'>                                        
+                </div>
+            </div>            
+            <p class="image-caption">Edge Image from Finite Difference Operator</p>
+
+            <p>
+                The above output was produce by first blurring the image with one convolution and then applying a separate 
+                convolution for the finite difference operator. It is also possible to combine the gaussian and finite 
+                difference filters into one filter such that you can apply both in one convolution. The resulting edge image
+                is very similar to when it was done separately, however, much of the computational work can be precomputed. 
+            </p>
+            <div class="single-image-container">
+                <p class="image-caption">Single Convolution Edge Image</p>
+                <img src='media/DoG_edge_img.jpg' alt='DoG edge image'>
+            </div>
+        </section>
+        
+        <section id="Image Sharpening">
+            <h2>Image Sharpening</h2>
+            <p>
+                Images can be made to appear sharper by adding more of the high frequencies within the image. In order to
+                accomplish this we can first apply a Gaussian filter, blurring the image and isolating the low frequencies.
+                Then to get the high frequencies we can subtract the low frequency image from the orignal image, leaving
+                only the high frequencies. With the high frequencies isolated we add the high frequencies back to the 
+                image, scaled by a factor of &alpha;. Below are the results of each step of the sharpening process applied
+                to several images.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Taj Mahal</p>
+                    <img src='media/taj.jpg' alt='Taj Mahal'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Blurred</p>
+                    <img src='media/blurred_taj.jpg' alt='blurred taj mahal'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">High Frequencies</p>
+                    <img src='media/high_freq_taj.jpg' alt='taj mahal details'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sharpened</p>
+                    <img src='media/sharpened_taj.jpg' alt='sharpened taj mahal'>                    
+                </div>
+            </div>  
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Tholos of Delphi</p>
+                    <img src='media/tholos_of_delphi.jpg' alt='tholos of delphi'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Blurred</p>
+                    <img src='media/blurred_tholos_of_delphi.jpg' alt='blurred tholos of delphi'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">High Frequencies</p>
+                    <img src='media/high_freq_tholos_of_delphi.jpg' alt='tholos of delphi details'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sharpened</p>
+                    <img src='media/sharpened_tholos_of_delphi.jpg' alt='sharpened tholos of delphi'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Church of Sacred Heart</p>
+                    <img src='media/church_of_sacred_heart.jpg' alt='church of sacred heart'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Blurred</p>
+                    <img src='media/blurred_church_of_sacred_heart.jpg' alt='blurred church of sacred heart'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">High Frequencies</p>
+                    <img src='media/high_freq_church_of_sacred_heart.jpg' alt='church of sacred heart details'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sharpened</p>
+                    <img src='media/sharpened_church_of_sacred_heart.jpg' alt='sharpened church of sacred heart'>
+                </div>
+            </div>
+
+        <section id="Hybrid Images">
+            <h2>Hybrid Images</h2>
+            <p>
+                A hybrid image is an image that when close up appears one way, but when viewed far away our perception
+                of changes. In order to create a hybrid image we can take the high frequencies of one image and the low
+                frequencies of another and overlay the two. High frequencies tend to dominate our perception if they are
+                available, however, they become hard to see from a distance, leaving only low frequencies visible.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Derek</p>
+                    <img src='media/aligned_derek.jpg' alt='derek'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Nutmeg</p>
+                    <img src='media/aligned_nutmeg.jpg' alt='nutmeg'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Dermeg</p>
+                    <img src='media/dermeg.jpg' alt='dermeg'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Dermeg (color)</p>
+                    <img src='media/color_dermeg.jpg' alt='color dermeg'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Lenny</p>
+                    <img src='media/aligned_lenny.jpg' alt='lenny'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Tiger</p>
+                    <img src='media/aligned_tiger.jpg' alt='tiger'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Tiger Lenny</p>
+                    <img src='media/tiger_lenny.jpg' alt='tiger lenny'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Tiger Lenny (color)</p>
+                    <img src='media/color_tiger_lenny.jpg' alt='color tiger lenny'>
+                </div>
+            </div>
+
+            <p>
+                The following hybrid image between the space needle and a pine tree was unsuccessful because
+                the objects within the images differed by too much to create a convincing hybrid image
+                effect. 
+            </p>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Space Needle</p>
+                    <img src='media/space_needle.jpg' alt='space needle'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Pine Tree</p>
+                    <img src='media/lone_pine_tree.jpg' alt='pine tree'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Space Pine</p>
+                    <img src='media/space_pine.jpg' alt='space pine'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Space Pine (color)</p>
+                    <img src='media/color_space_pine.jpg' alt='color space pine'>
+                </div>
+            </div>
+
+        </section>
+        
+        <section id="Frequency Analysis">
+            <h2>Frequency Analysis</h2>
+            <p>
+                As mentioned previously, the L2 Norm did not perform well enough as a metric in the case of the image of Emir. To fix
+                this I implemented Sobel edge detection which applies the Sobel kernels to a grayscale version of the image through
+                convolution and computes the magnitude of the gradient at each pixel. This performed much better than L2 in this case.
+            </p>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Tiger</p>
+                    <img src='media/aligned_tiger.jpg' alt='tiger'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Lenny</p>
+                    <img src='media/aligned_lenny.jpg' alt='lenny'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Tiger (Low Frequencies)</p>
+                    <img src='media/low_freq_tiger_lenny.jpg' alt='low freq tiger'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Lenny (High Frequencies)</p>
+                    <img src='media/high_freq_tiger_lenny.jpg' alt='high freq lenny'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Tiger Lenny</p>
+                    <img src='media/tiger_lenny.jpg' alt='tiger lenny'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='media/tiger_fourier.jpg' alt='tiger'>
+                </div>
+                <div class="image-item">
+                    <img src='media/lenny_fourier.jpg' alt='lenny freq'>
+                </div>
+                <div class="image-item">
+                    <img src='media/low_freq_fourier.jpg' alt='tiger low freq'>
+                </div>
+                <div class="image-item">
+                    <img src='media/high_freq_fourier.jpg'' alt='lenny high freq'>
+                </div>
+                <div class="image-item">
+                    <img src='media/hybrid_fourier.jpg' alt='hybrid freq'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Gaussian and Laplacian Stacks">
+            <h2>Gaussian and Laplacian Stacks</h2>
+            <p>
+                A Gaussian stack is created by iteratively applying a Gaussian blur to the original image,
+                with each level becoming progressively more blurred while keeping the image size consistent
+                across all levels. In contrast, the Laplacian stack captures the differences between adjacent
+                levels of the Gaussian stack, effectively representing the detail or frequency components lost
+                between each level of blurring. Specifically, each level of the Laplacian stack is obtained by
+                subtracting the next, more blurred, Gaussian level from the current one. The final level of the
+                Laplacian stack is taken directly from the last, most blurred, Gaussian level. This method
+                ensures that both stacks maintain the same number of levels while highlighting different aspects
+                of the image's structure.
+            </p>
+
+            <p class="image-caption">Orange Laplacian Stack</p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Level 0</p>
+                    <img src='media/orange0.jpg' alt='orange0'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Level 1</p>
+                    <img src='media/orange1.jpg' alt='orange1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Level 2</p>
+                    <img src='media/orange2.jpg' alt='orange2'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Level 3</p>
+                    <img src='media/orange3.jpg' alt='orange3'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Level 4</p>
+                    <img src='media/orange4.jpg' alt='orange4'>
+                </div>
+            </div>
+
+            <p class="image-caption">Apple Laplacian Stack</p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Level 0</p>
+                    <img src='media/apple0.jpg' alt='apple0'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Level 1</p>
+                    <img src='media/apple1.jpg' alt='apple1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Level 2</p>
+                    <img src='media/apple2.jpg' alt='apple2'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Level 3</p>
+                    <img src='media/apple3.jpg' alt='apple3'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Level 4</p>
+                    <img src='media/apple4.jpg' alt='apple4'>
+                </div>
+            </div>
+
+        </section>
+
+        <section id="Multiresolution Blending">
+            <h2>Multiresolution Blending</h2>
+            <p>
+                Multiresolution blending involves first calculating the Laplacian stacks for both input images,
+                denoted as \(L_A\) and \(L_B\). Next, we create a Gaussian stack for the mask, \(G_R\), which
+                allows us to achieve a smooth, multi-level feathering effect for each frequency band selected from
+                the images. The combined Laplacian stack, \(L_S\), is then formed by using the Gaussian levels
+                of the mask as blending weights, applying the following formula for each pixel at each level:
+        
+                \[
+                L_S(i,j) = G_R(i,j) \cdot L_A(i,j) + (1 - G_R(i,j)) \cdot L_B(i,j)
+                \]
+        
+                Finally, the combined stack is collapsed by summing all its levels, producing the blended image.
+                I found that using a more aggressive blurring strategy for the mask's Gaussian stack compared to
+                the images' Gaussian stacks yielded better results, as it created broader blending areas, even
+                for higher frequency details. Below are the Laplacian stacks for my additional image blends.
+            </p>
+
+            <p class="image-caption">Solf Ball</p>
+            <div class="stacked-and-tall-container">
+                <div class="left-stack">
+                    <img src="media/golf_ball.jpg" alt="Image 1">
+                    <img src="media/soccer_ball.jpg" alt="Image 2">
+                    <img src="media/soccer_golf.jpg" alt="Image 3">
+                </div>
+                <div class="right-tall">
+                    <img src="media/soccer_golf_levels.png" alt="Tall Image">
+                </div>
+            </div>
+
+            <p class="image-caption">Lennysaurus Rex</p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='media/left_lenny.jpg' alt='lenny'>
+                </div>
+                <div class="image-item">
+                    <img src='media/trex.jpg' alt='rex'>
+                </div>
+                <div class="image-item">
+                    <img src='media/lenny_rex.jpg' alt='lenny rex'>
+                </div>
+            </div>
+
+            <p class="image-caption">Evacado</p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='media/eva.jpg' alt='eva'>
+                </div>
+                <div class="image-item">
+                    <img src='media/avocado.jpg' alt='avocado'>
+                </div>
+                <div class="image-item">
+                    <img src='media/evacado.jpg' alt='evacado'>
+                </div>
+            </div>
+
+        </section>
+        
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Daniel Hodde</p>
+    </footer>
+</body>
+</html>
