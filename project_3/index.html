@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Morphing</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    <header class="header">
+        <img class="header-image" src='data/header_img.gif' alt='Header Image'>
+        <div class="header-overlay"></div>
+        <div class="title-container">
+            <h1 class="title">Face Morphing</h1>
+            <h2 class="subtitle"> by Daniel Hodde</h2>
+        </div>
+    </header>
+    
+    <main>
+        <section id="introduction">
+            <h2>Introduction</h2>
+            <p>
+                This project aims to accomplish three main goals: creating a morph between two faces,
+                calculating the average face of a group, and using that average to generate exaggerated features.
+                The first step involves morphing, which combines two techniques: gradually altering
+                the shape of one image to match another, while simultaneously blending their colors.
+            </p>
+        </section>
+        
+        <section id="Defining Correspondences">
+            <h2>Defining Correspondences</h2>
+            <p>
+                In order to succesfully complete a morph there needs to be consistent mapping between
+                the key features of one face to those of the other. The distinct features such as eyes,
+                nose, mouth are mapped to each other manually. Once these points are defined we compute 
+                the Delaunay triangulation, as it does not produce overly skinny triangles, so we can 
+                later use these in a morph. 
+            </p>       
+            <div class="image-comparison">
+                <div class="column">
+                    <p class="image-caption">Daniel</p>
+                    <img src="data/daniel.png" alt="daniel">
+                    <p class="image-caption">Chris</p>
+                    <img src="data/chris_hemsworth.png" alt="chris hemsworth">
+                </div>
+                <div class="column">
+                    <p class="image-caption">Daniel Trianulation</p>
+                    <img src="data/daniel_tris.png" alt="daniel triangulation">
+                    <p class="image-caption">Chris Triangulation</p>
+                    <img src="data/chris_tris.png" alt="chris triangulation">
+                </div>
+            </div>
+        </section>
+        
+        <section id="Computing the 'Mid-Way Face'">
+            <h2>Computing the "Mid-Way Face"</h2>
+            <p>
+                To preview the morphing process, I started by calculating the mid-way face between
+                Chris and myself. I first determined the average shape by averaging the correspondence points from both faces.
+                Next, for each triangle, I calculated the affine transformation matrix that maps the source
+                and target triangles to the corresponding triangle in the average shape. Using inverse warping,
+                I traced back the corresponding points in the original images. Since these coordinates might be
+                non-integers, I applied nearest neighbor interpolation to retrieve the pixel values.
+                Finally, I averaged the pixel colors from both images using cross-dissolving, producing the blended mid-way result.
+            </p>
+            <p class="image-caption">Mid-Way Face</p>
+            <div class="single-image-container">
+                <img src='data/daniel_chris_midway.png' alt='Mid-Way Face' class="single-image">
+            </div>
+        </section>
+
+        <section id="The Morph Sequence">
+            <h2>The Morph Sequence</h2>
+            <p>
+                To generate a complete morph sequence, we repeat the same steps
+                as the midway face but for the desired number of grames. By gradually adjusting
+                the weights from 0 to 1, we smoothly control both the shape transformation and color blending for each frame.
+                For my sequence, I used 45 frames played at 30 FPS.
+            </p>
+            <p class="image-caption">Daniel-Chris Morph</p>
+            <div class="gif-container">
+                <img src='data/daniel_hemisphere.gif' alt='Daniel-Chris Morph' class="gif-image">
+            </div>
+
+        </section>
+        
+        <section id="The Mean Face of a Population">
+            <h2>The "Mean Face" of a Population</h2>
+            <p>
+                To determine the mean face of a population you first need to determine the average of the 
+                points across the dataset. After determining this average it requires morphing each face
+                to this average point location and then averaging the colors.
+                <br><br>
+                I decided to do this for the danes dataset. The following are a sample of what the danes
+                morphed to the average face look like:
+            </p>
+            
+            <p class="image-caption">Danes Morphed to Average</p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='data/morphed_dane0.jpg' alt='warped dane'>
+                </div>
+                <div class="image-item">
+                    <img src='data/morphed_dane1.jpg' alt='warped dane'>
+                </div>
+                <div class="image-item">
+                    <img src='data/morphed_dane2.jpg' alt='warped dane'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='data/morphed_dane3.jpg' alt='warped dane'>
+                </div>
+                <div class="image-item">
+                    <img src='data/morphed_dane4.jpg' alt='warped dane'>
+                </div>
+                <div class="image-item">
+                    <img src='data/morphed_dane5.jpg' alt='warped dane'>
+                </div>
+            </div>
+
+            <p>
+                After morphing every image in the dataset to the average we can average all of 
+                these images to find the average face of the population.
+            </p>
+            <div class="single-image-container"></div>
+                <img src='data/average_dane.jpg' alt='Average Dane' class="single-image">
+            </div>
+            <p>
+                After computing the average dane we can also morph me into the average danish geometry
+                and the average dane into my geometry. I also changed the background of my photo to more
+                closely match the images in the danes dataset.
+            </p>
+            <div class="image-comparison">
+                <div class="column">
+                    <p class="image-caption">Daniel</p>
+                    <img src="data/dane-iel.png" alt="daneiel">
+                    <p class="image-caption">Average Dane</p>
+                    <img src="data/average_dane.jpg" alt="daneiel to avg">
+                </div>
+                <div class="column">
+                    <p class="image-caption">Daniel to Average Dane</p>
+                    <img src="data/daneiel_to_avg.jpg" alt="average_dane">
+                    <p class="image-caption">Average Dane to Daniel</p>
+                    <img src="data/avg_to_daneiel.jpg" alt="avg to daneiel">
+                </div>
+            </div>
+        </section>
+
+        <section id="Caricatures: Extrapolating from the Mean">
+            <h2>Caricatures: Extrapolating from the Mean</h2>
+            <p>
+                We can extend the warps that we created in the previous part and extrapolate from the mean
+                to create caricatures. This is done by taking the difference between the mean and my face 
+                and amplifying that by a parameter &alpha;.
+            </p>
+
+            <div class="image-comparison">
+                <div class="column">
+                    <p class="image-caption">&alpha; = 1.25</p>
+                    <img src="data/dan_caricature.jpg" alt="alpha 1.25">
+                </div>
+                <div class="column">
+                    <p class="image-caption">&alpha; = -2</p>
+                    <img src="data/dane_caricature.jpg" alt="alpha -2">
+                </div>
+            </div>
+
+        </section>
+
+        <section id="Bells and Whistles: Changing Genders">
+            <h2>Bells and Whistles: Changing Genders</h2>
+            <p>
+                For this part I recomputed the mean face of the danes dataset but only taking 
+                the female images to create a mean face for danish females. I used the resulting
+                mean face to morph myself into and make myself more feminine. I performed three morphs:
+                myself with feminine shape, feminine color, and both.
+            </p>
+            <div class="image-comparison">
+                <div class="column">
+                    <p class="image-caption">Daniel</p>
+                    <img src="data/dane-iel.png" alt="Daniel">
+                </div>
+                <div class="column">
+                    <p class="image-caption">Average Female Dane</p>
+                    <img src="data/average_female_dane.jpg" alt="Average Female Dane">
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Daniel w/ Female Shape</p>
+                    <img src='data/daneiel_to_fem1.jpg' alt='warped dane'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Daniel w/ Female Color</p>
+                    <img src='data/daneiel_to_fem2.jpg' alt='warped dane'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Daniel w/ Female Shape & Color</p>
+                    <img src='data/daneiel_to_fem3.jpg' alt='warped dane'>
+                </div>
+            </div>
+
+        </section>
+        
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Daniel Hodde</p>
+    </footer>
+</body>
+</html>
