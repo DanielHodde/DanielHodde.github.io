@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    </noscript>
     <title>Daniel Hodde - Software Engineer</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="mediaqueries.css" />
@@ -41,8 +45,12 @@
         <img src="./assets/profile_pic_1.png" alt="Daniel Hodde profile picture" />
       </div>
       <div class="section__text">
-        <p class="section__text__p1">Hello, I'm</p>
-        <h1 class="title">Daniel Hodde</h1>
+        <div class="typewriter-wrapper">
+          <!-- Transparent text to maintain layout -->
+          <h1 class="transparent-text">Daniel Hodde</h1>
+          <!-- Visible text for the typing effect -->
+          <h1 class="visible-text">Daniel Hodde</h1>
+        </div>   
         <p class="section__text__p2">Software Engineer</p>
         <div class="btn-container">
           <button
@@ -71,7 +79,7 @@
         </div>
       </div>
     </section>
-    <section id="about">
+    <section id="about" class="fade-in">
       <p class="section__text__p1">Get To Know More</p>
       <h1 class="title">About Me</h1>
       <div class="section-container">
@@ -118,9 +126,9 @@
         onclick="location.href='./#experience'"
       />
     </section>
-    <section id="experience">
+    <section id="experience" class="fade-in">
       <p class="section__text__p1">Explore My</p>
-      <h1 class="title">Experience</h1>
+      <h1 class="title">Expertise</h1>
       <div class="experience-details-container">
         <div class="about-containers">
           <div class="details-container">
@@ -352,7 +360,7 @@
         onclick="location.href='./#projects'"
       />
     </section>
-    <section id="projects">
+    <section id="projects" class="fade-in">
       <p class="section__text__p1">Browse My Recent</p>
       <h1 class="title">Projects</h1>
       <div class="experience-details-container">
