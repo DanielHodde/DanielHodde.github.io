@@ -19,6 +19,74 @@ p {
   color: rgb(85, 85, 85);
 }
 
+/* ANIMATION */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-in.hidden {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+/* Typewriter animation */
+/* Transparent element for layout reservation */
+.typewriter-wrapper {
+  position: relative;
+}
+
+.typewriter-wrapper h1 {
+  font-size: 3rem; /* Match the font size */
+  font-weight: bold;
+  white-space: nowrap; /* Prevent text wrapping */
+  margin: 0;
+}
+
+.typewriter-wrapper .transparent-text {
+  color: transparent; /* Completely transparent text */
+  visibility: hidden; /* Make sure it doesn't show up */
+}
+
+.typewriter-wrapper .visible-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  border-right: 3px solid black; /* Blinking cursor */
+  white-space: nowrap;
+  display: inline-block;
+  width: 0; /* Start with no width */
+  animation: typing 1.5s steps(12, end) forwards, blink 0.75s step-end infinite;
+  animation-delay: 0.1s;
+}
+
+/* Typing animation */
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%; /* Animate the width to fill up */
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+.typewriter-wrapper .visible-text.finished {
+  border-right: none; /* Remove the cursor after typing finishes */
+}
+
 /* TRANSITION */
 
 a,
