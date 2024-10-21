@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Warping and Mosaicing</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    <header class="header">
+        <img class="header-image" src='data/doe_header.png' alt='Header Image'>
+        <div class="header-overlay"></div>
+        <div class="title-container">
+            <h1 class="title">Image Warping and Mosaicing</h1>
+            <h2 class="subtitle"> by Daniel Hodde</h2>
+        </div>
+    </header>
+    
+    <main>
+        <section id="introduction">
+            <h2>Capturing the Images</h2>
+            <p>
+                Before continuing with image warping and mosaicing I first captured a set 
+                of images from around the UC Berkeley campus to use throughout the project.
+            </p>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Doe Library</p>
+                    <img src='data/doe.png' alt='doe library'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Hearst Mining</p>
+                    <img src='data/hearst_mining.png' alt='hearst mining'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Wheeler Hall</p>
+                    <img src='data/wheeler.png' alt='wheeler hall'>
+                </div>
+            </div>
+
+            <div class="image-comparison">
+                <div class="column">
+                    <p class="image-caption">IHouse Left</p>
+                    <img src='data/ihouse_left.png' alt='IHouse'>
+                    <p class="image-caption">Law and Society Left</p>
+                    <img src='data/law_left.png' alt='Law and Society'>
+                    <p class="image-caption">VLSB Left</p>
+                    <img src='data/vlsb_left.png' alt='VLSB'>
+                </div>
+                <div class="column">
+                    <p class="image-caption">IHouse Right</p>
+                    <img src='data/ihouse_right.png' alt='IHouse'>
+                    <p class="image-caption">Law and Society Right</p>
+                    <img src='data/law_right.png' alt='Law and Society'>
+                    <p class="image-caption">VLSB Right</p>
+                    <img src='data/vlsb_right.png' alt='VLSB'>
+                </div>
+            </div>
+
+        </section>
+        
+        <section id="Recovering Homographies">
+            <h2>Recovering Homographies</h2>
+            <p>
+                Before we are able to warp images, we first need to recover the parameters of the
+                transformation between each image. 
+                <br><br>
+                In our case, the transformation is a homography and is given by:
+                
+                \[
+                \mathbf{p'} = H \mathbf{p}
+                \]
+                
+                where \( H \) is a \( 3 \times 3 \) matrix with 8 degrees of freedom (since the bottom-right
+                entry is set to 1 for normalization), and \( \mathbf{p} \) and \( \mathbf{p'} \) are the
+                homogeneous coordinates of the points in the two images. This can be written as:
+                
+                \[
+                \begin{bmatrix}
+                x' \\
+                y' \\
+                1
+                \end{bmatrix}
+                =
+                \begin{bmatrix}
+                h_1 & h_2 & h_3 \\
+                h_4 & h_5 & h_6 \\
+                h_7 & h_8 & 1
+                \end{bmatrix}
+                \begin{bmatrix}
+                x \\
+                y \\
+                1
+                \end{bmatrix}
+                \]
+                
+                To recover the homography matrix \( H \), we set up a system of linear equations
+                using the point correspondences from the two images. The system takes the following form:
+                
+                \[
+                \begin{bmatrix}
+                x_1 & y_1 & 1 & 0 & 0 & 0 & -x'_1 x_1 & -x'_1 y_1 \\
+                0 & 0 & 0 & x_1 & y_1 & 1 & -y'_1 x_1 & -y'_1 y_1 \\
+                x_2 & y_2 & 1 & 0 & 0 & 0 & -x'_2 x_2 & -x'_2 y_2 \\
+                0 & 0 & 0 & x_2 & y_2 & 1 & -y'_2 x_2 & -y'_2 y_2 \\
+                \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots & \vdots \\
+                x_n & y_n & 1 & 0 & 0 & 0 & -x'_n x_n & -x'_n y_n \\
+                0 & 0 & 0 & x_n & y_n & 1 & -y'_n x_n & -y'_n y_n
+                \end{bmatrix}
+                \begin{bmatrix}
+                h_1 \\
+                h_2 \\
+                h_3 \\
+                h_4 \\
+                h_5 \\
+                h_6 \\
+                h_7 \\
+                h_8
+                \end{bmatrix}
+                =
+                \begin{bmatrix}
+                x'_1 \\
+                y'_1 \\
+                x'_2 \\
+                y'_2 \\
+                \vdots \\
+                x'_n \\
+                y'_n
+                \end{bmatrix}
+                \]
+                
+                In this setup, the left-hand matrix grows by two additional rows for each new
+                correspondence point pair, and the right-hand vector grows similarly with each new \( (x'_i, y'_i) \) pair. 
+                
+                To avoid the system being underdetermined, we require at least 4 point correspondences
+                between the two images. However, with only 4 correspondences, the solution may be sensitive
+                to noise and instability. When there are more than 4 correspondences, resulting in an overdetermined
+                system, we can solve for \( H \) using least squares, providing a good approximate solution
+                even in the presence of noise or small errors in the correspondences.
+                
+            </p>       
+        </section>
+        
+        <section id="Image Rectification">
+            <h2>Image Rectification</h2>
+            <p>
+                Using this homography we can now rectify images. To do this we manually select any known rectangular
+                surface within an image and map it to an appropriately sized rectangle, yielding the following
+                results:
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Doe Library</p>
+                    <img src='data/doe.png' alt='doe library'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Doe Library Points</p>
+                    <img src='data/doe_points.png' alt='Doe Library Points'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Doe Library Rectified</p>
+                    <img src='data/doe_rectified.png' alt='Doe Library Rectified'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Hearst Mining</p>
+                    <img src='data/hearst_mining.png' alt='Hearst Mining'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Hearst Mining Points</p>
+                    <img src='data/hearst_mining_points.png' alt='hearst mining'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Hearst Mining Rectified</p>
+                    <img src='data/hearst_mining_rectified.png' alt='Hearst Mining'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Wheeler Hall</p>
+                    <img src='data/wheeler.png' alt='doe library'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Wheeler Hall Points</p>
+                    <img src='data/wheeler_points.png' alt='hearst mining'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Wheeler Hall Rectified</p>
+                    <img src='data/wheeler_rectified.png' alt='wheeler hall'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Image Blending">
+            <h2>Image Blending</h2>
+            <p>
+                The image blending process uses a distance transform approach to smoothly combine two
+                images. First, the source image is warped using a homography matrix and both images
+                are placed on a larger canvas.
+
+                Distance transforms are computed from the alpha channels, with each pixel's value
+                representing its distance to the nearest edge. These transforms are normalized
+                and used as blending weights. Gaussian smoothing is applied to ensure soft transitions
+                in overlapping areas.
+
+                The images are then blended using a weighted combination of the distance transforms.
+                The alpha channel is handled by taking the maximum value from both images, ensuring
+                correct transparency. This method ensures smooth, seamless blending based on pixel
+                proximity to image edges.
+            </p>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">IHouse Left</p>
+                    <img src='data/ihouse_left.png' alt='ihouse left'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">IHouse Right</p>
+                    <img src='data/ihouse_right.png' alt='ihouse right'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">IHouse</p>
+                    <img src='data/ihouse_mosaic.png' alt='ihouse mosaic'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Law and Society</p>
+                    <img src='data/law_left.png' alt='law left'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Law and Society Right</p>
+                    <img src='data/law_right.png' alt='law right'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Law and Society Mosaic</p>
+                    <img src='data/law_mosaic.png' alt='law and society mosaic'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">VLSB Left</p>
+                    <img src='data/vlsb_left.png' alt='vlsb left'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">VLSB Right</p>
+                    <img src='data/vlsb_right.png' alt='vlsb right'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">VLSB Mosaic</p>
+                    <img src='data/vlsb_mosaic.png' alt='vlsb mosaic'>
+                </div>
+            </div>
+
+        </section>
+        
+        
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Daniel Hodde</p>
+    </footer>
+</body>
+</html>
