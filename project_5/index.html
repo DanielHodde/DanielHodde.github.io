@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diffusion Models</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    <header class="header">
+        <img class="header-image" src='data/snowy-village.png' alt='Header Image'>
+        <div class="header-overlay"></div>
+        <div class="title-container">
+            <h1 class="title">Diffusion Models</h1>
+            <h2 class="subtitle"> by Daniel Hodde</h2>
+        </div>
+    </header>
+    
+    <main>
+        <section id="Sampling Loops">
+            <h2>Sampling Loops</h2>
+            <p>
+                Initially, the goal is to generate high-quality images by progressively denoising noisy inputs
+                by using pretrained DeepFloyd denoisers. In diffusion models, a clean image is corrupted by 
+                adding noise iteratively until it becomes pure noise. The reverse process removes this noise
+                step by step, using the model's predictions to recover the clean image.
+
+                Image generation begins with pure noise sampled from a Gaussian distribution. The model predicts 
+                and removes noise at each step, gradually refining the image until it is clean.
+            </p>
+        </section>
+
+        <section id="Forward Process">
+            <h2>Forward Process</h2>
+            <p>
+                The forward process in diffusion models is used to progressively add noise 
+                to a clean image. This process is mathematically defined using a Gaussian distribution 
+                \( q(x_t|x_0) \), where the mean is scaled by \( \sqrt{\bar{\alpha}_t}x_0 \) and the 
+                variance is proportional to \( (1 - \bar{\alpha}_t) \). The noisy image \( x_t \) at 
+                timestep \( t \) was computed using the formula \( x_t = \sqrt{\bar{\alpha}_t}x_0 + 
+                \sqrt{1 - \bar{\alpha}_t}\epsilon \), where \( \epsilon \) is sampled from a standard 
+                normal distribution \( N(0,1) \). As \( t \) increases, the amount of noise added to the 
+                image increases. For small values of \( t \), \( \bar{\alpha}_t \) remains close to 1, 
+                resulting in less noise, while for larger values of \( t \), \( \bar{\alpha}_t \) approaches 
+                0, adding more noise. The forward process 
+                was implemented using the variable <code>alphas_cumprod</code>, which contains precomputed 
+                values of \( \bar{\alpha}_t \) for timesteps \( t \in [0, 999] \). A test image, resized to 
+                64x64 pixels, was used to demonstrate the process. The forward process was applied at specific 
+                timesteps (\( t = 250, 500, 750 \)) to generate progressively noisier versions of the image.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Berkeley Campanile</p>
+                    <img src='data/campanile.png' alt='Berkeley Campanile'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 250</p>
+                    <img src='data/campanile-250.png' alt='Noisy Campanile t = 250'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 500</p>
+                    <img src='data/campanile-500.png' alt='Noisy Campanile t = 500'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 750</p>
+                    <img src='data/campanile-750.png' alt='Noisy Campanile t = 750'>
+                </div>
+            </div>
+        </section>
+        
+        <section id="Clasical Denoising">
+            <h2>Clasical Denoising</h2>
+            <p>
+                The first way we can attempt to remove the noise from the image is by using a classical denoising 
+                method like gaussian blur filtering. As the following results show, achieving a good result with 
+                this method is close to impossible with this methedology.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 250</p>
+                    <img src='data/campanile-250.png' alt='Noisy Campanile t = 250'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 500</p>
+                    <img src='data/campanile-500.png' alt='Noisy Campanile t = 500'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 750</p>
+                    <img src='data/campanile-750.png' alt='Noisy Campanile t = 750'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Gaussian Denoising t = 250</p>
+                    <img src='data/campanile-250-classical.png' alt='Noisy Campanile t = 250'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Gaussian Denoising t = 500</p>
+                    <img src='data/campanile-500-classical.png' alt='Noisy Campanile t = 500'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Gaussian Denoising t = 750</p>
+                    <img src='data/campanile-750-classical.png' alt='Noisy Campanile t = 750'>
+                </div>
+            </div>
+        </section>
+
+        <section id="One-Step Denoising">
+            <h2>One-Step Denoising</h2>
+            <p>
+                As we can see classical methods are not able to remove the noise from the image, we can instead 
+                attempt to remove the noise from the image using one step denoising. To do this, we use a preterained 
+                diffusion model to recover something closer to the clean image.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 250</p>
+                    <img src='data/campanile-250.png' alt='Noisy Campanile t = 250'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 500</p>
+                    <img src='data/campanile-500.png' alt='Noisy Campanile t = 500'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 750</p>
+                    <img src='data/campanile-750.png' alt='Noisy Campanile t = 750'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">One-Step Denoising t = 250</p>
+                    <img src='data/campanile-one-step-500.png' alt='Denoised Campanile t = 250'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">One-Step Denoising t = 500</p>
+                    <img src='data/campanile-one-step-500.png' alt='Denoised Campanile t = 500'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">One-Step Denoising t = 750</p>
+                    <img src='data/campanile-one-step-750.png' alt='Denoised Campanile t = 750'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Iterative Denoising">
+            <h2>Iterative Denoising</h2>
+            <p>
+                To further improve this process we can implement iterative denoising. In this method the core denoising step uses a formula that calculates \(x_{t'}\) 
+                (the less noisy image) from \(x_t\) (the current noisy image). The formula is:
+                $$
+                x_{t'} = \frac{\sqrt{\bar{\alpha}_{t'}\beta_t}}{1-\bar{\alpha}_t}x_0 + \frac{\sqrt{\alpha_t(1-\bar{\alpha}_{t'})}}{1-\bar{\alpha}_t}x_t + v_\sigma
+                $$
+                This formula works by balancing our clean image estimate (\(x_0\)), the current noisy image (\(x_t\)), 
+                and a variance term (\(v_\sigma\)), with their relative contributions controlled by the alpha and beta 
+                parameters. The weights are determined by the alphas and betas, where 
+                \(\alpha_t = \bar{\alpha}_t/\bar{\alpha}_{t'}\) and \(\beta_t = 1-\alpha_t\). The \(\bar{\alpha}_t\) values 
+                come from alphas_cumprod. This weighting ensures a smooth transition between 
+                noise levels, with the contribution of the estimated clean image increasing as we move to lower noise levels.
+                Each iteration of our denoising loop applies this formula, stepping from one strided timestep to the next, 
+                progressively producing cleaner images until we reach the final result.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 90</p>
+                    <img src='data/iter-denoise-90.png' alt='Noisy Campanile t = 90'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 240</p>
+                    <img src='data/iter-denoise-240.png' alt='Noisy Campanile t = 240'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 390</p>
+                    <img src='data/iter-denoise-390.png' alt='Noisy Campanile t = 390'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 540</p>
+                    <img src='data/iter-denoise-540.png' alt='Noisy Campanile t = 540'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Noisy Campanile t = 690</p>
+                    <img src='data/iter-denoise-690.png' alt='Noisy Campanile t = 690'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Original Campanile</p>
+                    <img src='data/campanile.png' alt='Denoised Campanile t = 250'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Iterative Denoised</p>
+                    <img src='data/iter-denoise.png' alt='Denoised Campanile t = 500'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">One-Step Denoised</p>
+                    <img src='data/campanile-one-step-750.png' alt='Denoised Campanile t = 750'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Gaussian Blurred</p>
+                    <img src='data/campanile-blur-filter.png' alt='Denoised Campanile t = 750'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Diffusion Model Sampling">
+            <h2>Diffusion Model Sampling</h2>
+            <p>
+                Another thing we can do with iterative denoising is to start from pure noise, then by applying 
+                the denoising process iteratively, we can essentially create an image out of nothing. The following
+                are 5 results from this process.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Sample 1</p>
+                    <img src='data/sample-1.png' alt='Sample 1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sample 2</p>
+                    <img src='data/sample-2.png' alt='Sample 2'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sample 3</p>
+                    <img src='data/sample-3.png' alt='Sample 3'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sample 4</p>
+                    <img src='data/sample-4.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sample 5</p>
+                    <img src='data/sample-5.png' alt='Sample 5'>
+                </div>
+            </div>
+        </section>
+        
+        <section id="Classifier Free Guidance (CFG)">
+            <h2>Classifier Free Guidance (CFG)</h2>
+            <p>
+                The iterative denoising process often produces poor results, sometimes 
+                generating nonsensical images. To improve quality, Classifier-Free Guidance (CFG) combines 
+                conditional and unconditional noise estimates. The following formula used is:
+                $${\epsilon} = \epsilon_{u} + \gamma (\epsilon_{c} - \epsilon_{u})$$
+                Here, \(\gamma\) is the guidance scale. When \(\gamma\) = 0, the estimate is purely unconditional; at \(\gamma\) = 1, it is fully conditional. For 
+                \(\gamma\)>1, higher-quality images are often produced. The denoising process is modified to include an
+                unconditional noise estimate using an empty prompt embedding, as the model is trained to 
+                handle this case. The following are 5 results from this improved process.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Sample 1 with CFG</p>
+                    <img src='data/cfg-1.png' alt='Sample 1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sample 2 with CFG</p>
+                    <img src='data/cfg-2.png' alt='Sample 2'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sample 3 with CFG</p>
+                    <img src='data/cfg-3.png' alt='Sample 3'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sample 4 with CFG</p>
+                    <img src='data/cfg-4.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Sample 5 with CFG</p>
+                    <img src='data/cfg-5.png' alt='Sample 5'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Image-to-Image Translation">
+            <h2>Image-to-Image Translation</h2>
+            <p>
+                In this implementation, we used a combination of adding noise to an existing image and 
+                denoising it to effectively make edits to the image. The extent of the edit depends on the amount 
+                of noise added: more noise leads to larger edits as the diffusion model becomes more "creative" 
+                during the denoising process. This is because the denoising process forces the noisy image back 
+                onto natural images, allowing the model to "hallucinate" or generate new details.
+        
+                Using the SDEdit algorithm, we applied this process to the several images. By adding varying 
+                levels of noise and denoising without any conditioning, we generated a series of images that 
+                progressively resembled the test image as the noise level decreased. Starting indices of [1, 3, 5, 7, 10, 20] 
+                steps were used for the denoising process.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=1</p>
+                    <img src='data/SDE-camp-1.png' alt='Sample 1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=3</p>
+                    <img src='data/SDE-camp-3.png' alt='Sample 2'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=5</p>
+                    <img src='data/SDE-camp-5.png' alt='Sample 3'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=7</p>
+                    <img src='data/SDE-camp-7.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=10</p>
+                    <img src='data/SDE-camp-10.png' alt='Sample 5'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=20</p>
+                    <img src='data/SDE-camp-20.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Campanile</p>
+                    <img src='data/campanile.png' alt='Sample 5'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=1</p>
+                    <img src='data/SDE-lenny-1.png' alt='Sample 1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=3</p>
+                    <img src='data/SDE-lenny-3.png' alt='Sample 2'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=5</p>
+                    <img src='data/SDE-lenny-5.png' alt='Sample 3'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=7</p>
+                    <img src='data/SDE-lenny-7.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=10</p>
+                    <img src='data/SDE-lenny-10.png' alt='Sample 5'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=20</p>
+                    <img src='data/SDE-lenny-20.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Lenny</p>
+                    <img src='data/lenny.png' alt='Sample 5'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=1</p>
+                    <img src='data/SDE-latte-1.png' alt='Sample 1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=3</p>
+                    <img src='data/SDE-latte-3.png' alt='Sample 2'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=5</p>
+                    <img src='data/SDE-latte-5.png' alt='Sample 3'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=7</p>
+                    <img src='data/SDE-latte-7.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=10</p>
+                    <img src='data/SDE-latte-10.png' alt='Sample 5'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=20</p>
+                    <img src='data/SDE-latte-20.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Latte</p>
+                    <img src='data/latte.png' alt='Sample 5'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Editing Hand Drawn and Web Images">
+            <h2>Editing Hand Drawn and Web Images</h2>
+            <p>
+                The above process works particularly well if you start with nonrealistic images.
+                The following are a repeat of this process with a mix of nonrealistic and 
+                hand-drawn images.
+            </p>
+            <div class="image-caption">Bernese Edit</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/bernese-edit.png' alt='IHouse Matches'>
+            </div>
+            <div class="image-caption">Hungarian Flag Edit</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/hungary-edit.png' alt='Hungarian Flag'>
+            </div>
+            <div class="image-caption">Guitar Edit</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/guitar-edit.png' alt='Guitar Edit'>
+            </div>
+        </section>
+
+        <section id="Inpainting">
+            <h2>Inpainting</h2>
+            <p>
+                Inpainting involves modifying an image based on a binary mask. Given an image and a mask, the same process we have been using
+                generates new content wherever the mask equals 1, while preserving the original content where the mask equals 0.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Campanile</p>
+                    <img src='data/campanile.png' alt='Campanile'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Mask</p>
+                    <img src='data/camp-mask.png' alt='Noisy Campanile t = 500'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Hole to Fill</p>
+                    <img src='data/camp-replace.png' alt='Noisy Campanile t = 750'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Campanile Inpainted</p>
+                    <img src='data/campanile-inpaint.png' alt='Noisy Campanile t = 750'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Lenny</p>
+                    <img src='data/lenny.png' alt='lenny'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Mask</p>
+                    <img src='data/lenny-mask.png' alt='Mask'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Hole to Fill</p>
+                    <img src='data/lenny-replace.png' alt='Hole to Fill'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Lenny Inpainted</p>
+                    <img src='data/lenny-inpaint.png' alt='lenny-inpaint'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Latte</p>
+                    <img src='data/latte.png' alt='Latte'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Mask</p>
+                    <img src='data/latte-mask.png' alt='Mask'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Hole to Fill</p>
+                    <img src='data/latte-replace.png' alt='Hole to Fill'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Latte Inpainted</p>
+                    <img src='data/latte-inpaint.png' alt='Latte Inpainted'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Text Conditional Image-to-Image Translation">
+            <h2>Image-to-Image Translation</h2>
+            <p>
+                We can perform the same process as image-to-image translation, but with text prompts, so that 
+                the model can start from the text prompt and slowly become more like the target image.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=1</p>
+                    <img src='data/rocket-to-camp-1.png' alt='Sample 1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=3</p>
+                    <img src='data/rocket-to-camp-3.png' alt='Sample 2'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=5</p>
+                    <img src='data/rocket-to-camp-5.png' alt='Sample 3'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=7</p>
+                    <img src='data/rocket-to-camp-7.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=10</p>
+                    <img src='data/rocket-to-camp-10.png' alt='Sample 5'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=20</p>
+                    <img src='data/rocket-to-camp-20.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Campanile</p>
+                    <img src='data/campanile.png' alt='Sample 5'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=1</p>
+                    <img src='data/rocket-to-lenny-1.png' alt='Sample 1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=3</p>
+                    <img src='data/rocket-to-lenny-3.png' alt='Sample 2'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=5</p>
+                    <img src='data/rocket-to-lenny-5.png' alt='Sample 3'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=7</p>
+                    <img src='data/rocket-to-lenny-7.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=10</p>
+                    <img src='data/rocket-to-lenny-10.png' alt='Sample 5'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=20</p>
+                    <img src='data/rocket-to-lenny-20.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Lenny</p>
+                    <img src='data/lenny.png' alt='Sample 5'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=1</p>
+                    <img src='data/rocket-to-latte-1.png' alt='Sample 1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=3</p>
+                    <img src='data/rocket-to-latte-3.png' alt='Sample 2'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=5</p>
+                    <img src='data/rocket-to-latte-5.png' alt='Sample 3'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=7</p>
+                    <img src='data/rocket-to-latte-7.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=10</p>
+                    <img src='data/rocket-to-latte-10.png' alt='Sample 5'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">SDEdit i_start=20</p>
+                    <img src='data/rocket-to-latte-20.png' alt='Sample 4'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Latte</p>
+                    <img src='data/latte.png' alt='Sample 5'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Visual Anagrams">
+            <h2>Visual Anagrams</h2>
+            <p>
+                Visual Anagrams use diffusion models to create optical illusions by blending two prompts. 
+                An image is denoised with one prompt, for example: "an oil painting of an old man" to compute one noise 
+                estimate, while its flipped version is denoised with another prompt, say "an oil painting of people 
+                around a campfire". The flipped estimate is aligned, averaged with the first, 
+                and used for reverse diffusion, generating an image that changes appearance based on its orientation.
+                This process is done according to the following equation:
+                \[
+                \epsilon_1 = \text{UNet}(x_t, t, p_1)
+                \]
+                \[
+                \epsilon_2 = \text{flip}(\text{UNet}(\text{flip}(x_t), t, p_2))
+                \]
+                \[
+                \epsilon = \frac{\epsilon_1 + \epsilon_2}{2}
+                \]
+            </p>
+            <div class="image-comparison">
+                <div class="column">
+                    <p class="image-caption">An Oil Painting of an Old Man</p>
+                    <img src='data/old-man.png' alt='IHouse'>
+                    <p class="image-caption">A Photo of a Man</p>
+                    <img src='data/photo-of-man.png' alt='A Photo of a Man'>
+                    <p class="image-caption">An Oil Painting of a Snowy Mountain Village</p>
+                    <img src='data/snowy-vill-skull-1.png' alt='An Oil Painting of a Snowy Mountain Village'>
+                </div>
+                <div class="column">
+                    <p class="image-caption">An Oil Painting of People Around a Campfire</p>
+                    <img src='data/people-around-fire.png' alt='An Oil Painting of People Around a Campfire'>
+                    <p class="image-caption">A Lithograph of Waterfalls</p>
+                    <img src='data/litho-of-waterfalls.png' alt='A Lithograph of Waterfalls'>
+                    <p class="image-caption">A Lithograph of a Skull</p>
+                    <img src='data/snowy-vill-skull-2.png' alt='A Lithograph of a Skull'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Hybrid Images">
+            <h2>Hybrid Images</h2>
+            <p>
+                Factorized Diffusion was used to create hybrid images by combining elements of two distinct 
+                text prompts. The process involves generating two noise estimates using a diffusion 
+                model, each corresponding to a specific prompt. A composite noise estimate is then 
+                created by blending the low frequencies of one noise estimate with the high frequencies of the other.
+
+                The algorithm to do so is defined as:
+                \[
+                \epsilon_1 = \text{UNet}(x_t, t, p_1), \quad \epsilon_2 = \text{UNet}(x_t, t, p_2)
+                \]
+                \[
+                \epsilon = \text{lowpass}(\epsilon_1) + \text{highpass}(\epsilon_2)
+                \]
+
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Hybrid Image of a Skull and Waterfalls</p>
+                    <img src='data/skull-waterfall.png' alt='Hybrid Image of a Skull and Waterfalls'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Hybrid Image of Easter Island Moai and a Forest</p>
+                    <img src='data/maoi-head-forest-canopy.png' alt='Hybrid Image of Easter Island Moai and a Forest'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Hybrid Image of a Dog and a Starry Sky</p>
+                    <img src='data/dog-night-sky.png' alt='Hybrid Image of a Dog and a Starry Sky'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Training a Single Step Denoising UNet">
+            <h2>Training a Single Step Denoising UNet</h2>
+            <p>
+                Given a noisy image \( z \), we aim to train a denoiser \( D_\theta \) such 
+                that it maps \( z \) to a clean image \( x \). To do so, we can optimize over an L2 loss:
+                \[
+                L = \mathbb{E}_{z,x} \|D_\theta(z) - x\|^2
+                \]
+                <br><br>
+                The operations of this UNet are defined in the following diagrams:
+            </p>
+            <div class="image-caption">Unconditional UNet</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/unconditional_unet.png' alt='Unconditional UNet'>
+            </div>
+            <div class="image-caption">Standard UNet Operations</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/standard-unet-ops.png' alt='Standard UNet Operations'>
+            </div>
+            <p>
+                To train our denoiser, we need to generate training data pairs of \( (z, x) \), where each \( x \) is a clean MNIST digit. 
+                For each training batch, we can generate pairs using the following noising process:
+                \[
+                z = x + \sigma \epsilon, \quad \text{where } \epsilon \sim N(0, I).
+                \]
+                The result of this noising process looks like the following:
+            </p>
+            <div class="image-caption">Noising Process</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/noise-visualization.png' alt='Noising Process'>
+            </div>
+            <p>
+                We can now train our model to be able to perform the denoising.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Training Loss</p>
+                    <img src='data/unconditional-training-loss.png' alt='unconditional-training-loss'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Results After 1 Epoch</p>
+                    <img src='data/uncondition-res-1.png' alt='uncondition-res-1'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Results After 5 Epochs</p>
+                    <img src='data/uncondition-res-5.png' alt='uncondition-res-5'>
+                </div>
+            </div>
+            <p>
+                The model has been trained for \(\sigma = 0.5 \). The following are results 
+                from noise levels that it was not trained on.
+            </p>
+            <div class="image-caption">Out of Distribution Results</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/uncondition-res-out-of-dist.png' alt='Out of Distribution Results'>
+            </div>
+        </section>
+
+        <section id="Training a Diffusion Model">
+            <h2>Training a Diffusion Model</h2>
+            <p>
+                To implement diffusion with a U-Net model, the process is designed to predict the added noise 
+                \(\epsilon\) rather than the clean image \(\mathbf{x}\). This adjustment simplifies the training 
+                objective, transitioning the loss function from predicting \(\mathbf{x}\) to directly minimizing 
+                the difference between the predicted noise and the true noise. The final loss function used is:
+                
+                \[ L = \mathbb{E}_{\mathbf{x},\epsilon}\|\epsilon_\theta(z) - \epsilon\|^2 \]
+                
+                The training process involves iteratively denoising an image from pure noise \(\epsilon \sim N(0, I)\) 
+                to a realistic image. At each timestep \(t\), a noisy version of the image, \(\mathbf{x}_t\), is 
+                generated as a weighted combination of the clean image \(\mathbf{x}_0\) and noise \(\epsilon\), with 
+                weights determined by the variance schedule parameters \(\overline{\alpha}_t\) and \(1 - \overline{\alpha}_t\). 
+                This is calculated using the following equation:
+                
+                \[ \mathbf{x}_t = \sqrt{\overline{\alpha}_t}\mathbf{x}_0 + \sqrt{1 - \overline{\alpha}_t}\epsilon \]
+                
+                A variance schedule \(\beta_t\) is constructed with values linearly spaced from \(\beta_0 = 0.0001\) to 
+                \(\beta_T = 0.02\) over \(T\) timesteps. Using \(\beta_t\), the corresponding \(\alpha_t\) is defined as 
+                \(\alpha_t = 1 - \beta_t\), and the cumulative product of \(\alpha_t\) is used to compute \(\overline{\alpha}_t\) for each timestep:
+                
+                \[ \overline{\alpha}_t = \prod_{s=1}^t \alpha_s \]
+                
+                These parameters ensure that \(\overline{\alpha}_t\) is close to 1 for small \(t\), representing less noise, 
+                and close to 0 for large \(t\), representing pure noise.
+                
+                The denoising process uses a single U-Net \(\epsilon_\theta\) conditioned on the timestep \(t\). The U-Net 
+                is trained to predict the noise \(\epsilon\) added to \(\mathbf{x}_0\), allowing it to iteratively denoise 
+                the input. The final objective function minimizes the mean squared error between the predicted and true noise:
+                
+                \[ L = \mathbb{E}_{\mathbf{x}_0,\epsilon},t\|\epsilon_\theta(\mathbf{x}_t, t) - \epsilon\|^2 \]
+                
+                This approach avoids the need for training separate models for each timestep by using a single model conditioned 
+                on the timesteps. We also need to inject a scalar \(t\) into the U-Net to condition it. This was done according
+                to the following diagrams:
+            </p>
+            <div class="image-caption">Conditioned UNet</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/time-cond-unet.png' alt='Conditioned UNet'>
+            </div>
+            <p>
+                This diagram uses an FCBlock (fully connected block) to inject the timestep into the U-Net. The FCBlock 
+                is defined as follows:
+            </p>
+            <div class="image-caption">FCBlock</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/fcblock.png' alt='FCBlock'>
+            </div>
+            <p>
+                Now to train the time-conditioned UNet, we pick a random image from the training set, a random 
+                timestep \(t\), and train the denoiser to predict the noise in \(\mathbf{x}_t\).
+                We repeat this for different images and different t until the model converges. And if we sample 
+                from the UNet we get the following results:
+            </p>
+            <div class="image-caption">Training Loss</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/time-conditioned-loss.png' alt='Training Loss'>
+            </div>
+            <div class="image-caption">Results After 5 Epochs</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/time-cond-5.png' alt='time-conditioned-res-5'>
+            </div>
+            <div class="image-caption">Results After 20 Epochs</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/time-cond-20.png' alt='time-conditioned-res-20'>
+            </div>
+            <p>
+                To improve the results and give us greater control over image generation, we can optionally 
+                condition our UNet on the digit class (0-9). This requires adding two additional FCBlocks to the UNet.
+                <br><br>
+                Training and sampling from the class-conditioned UNet is shown below is almost identical to the time-conditioned UNet.
+                The improved results from this process are shown below:
+            </p>
+            <div class="image-caption">Training Loss</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/class-cond-loss.png' alt='Training Loss'>
+            </div>
+            <div class="image-caption">Results After 5 Epochs</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/class-cond-5.png' alt='class-conditioned-res-5'>
+            </div>
+            <div class="image-caption">Results After 20 Epochs</div>
+            <div class="single-image-container">
+                <img class="single-image" src='data/class-cond-20.png' alt='class-conditioned-res-20'>
+            </div>
+        </section>
+        
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Daniel Hodde</p>
+    </footer>
+</body>
+</html>
