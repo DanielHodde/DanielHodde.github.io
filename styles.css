@@ -427,9 +427,30 @@ article .icon {
 
 /* PROJECTS SECTION */
 
-#projects {
+/* #projects {
   position: relative;
+} */
+
+#projects .projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  justify-content: start; 
+  width: 100%; 
+  max-width: 1200px; 
+  margin: 0 auto; 
+  padding: 0 2rem;
 }
+
+.project-card {
+  border-color: rgb(163, 163, 163);
+  background: rgb(250, 250, 250);
+  border-radius: 2rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 
 .color-container {
   border-color: rgb(163, 163, 163);
