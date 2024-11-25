@@ -126,6 +126,14 @@ img {
     text-align: center;
 }
 
+.image-caption-large {
+    margin-top: 10px;
+    font-style: italic;
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.5em;
+}
+
 /* Results table styling */
 .results-table {
     width: 100%;
