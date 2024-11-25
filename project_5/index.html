@@ -21,6 +21,62 @@
     </header>
     
     <main>
+        <section id="DeepFloyd Diffusion Model">
+            <h2>DeepFloyd Diffusion Model</h2>
+            <p>
+                The first section of the following project uses the pretrained DeepFloyd model. To
+                get a sense of the model, we can first take a sampling of iamges from a selection of text prompts
+                and inference steps  all using the seed "180". As is evident in images,
+                when lower inference steps are used, the images tend to have a smooth quality to them, and when higher inference 
+                steps are used the images become more detailed representations of the prompt.
+            </p>
+            <p class="image-caption-large">"An oil painting of a snowy mountain village"</p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">num_inference_steps = 10</p>
+                    <img src='data/snowy-village-10.png' alt='snowy-village-10'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">num_inference_steps = 20</p>
+                    <img src='data/snowy-village.png' alt='snowy-village-20'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">num_inference_steps = 50</p>
+                    <img src='data/snowy-village-10.png' alt='snowy-village-10'>
+                </div>
+            </div>
+            <p class="image-caption-large">"A man wearing a hat"</p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">num_inference_steps = 10</p>
+                    <img src='data/man-in-hat-10.png' alt='man-in-hat-10'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">num_inference_steps = 20</p>
+                    <img src='data/man-in-hat.png' alt='man-in-hat-20'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">num_inference_steps = 50</p>
+                    <img src='data/man-in-hat-50.png' alt='man-in-hat-50'>
+                </div>
+            </div>
+            <p class="image-caption-large">"A rocket ship"</p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">num_inference_steps = 10</p>
+                    <img src='data/rocket-ship-10.png' alt='rocket-ship-10'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">num_inference_steps = 20</p>
+                    <img src='data/rocket-ship.png' alt='rocket-ship-20'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">num_inference_steps = 50</p>
+                    <img src='data/rocket-ship-50.png' alt='rocket-ship-50'>
+                </div>
+            </div>
+        </section>
+
         <section id="Sampling Loops">
             <h2>Sampling Loops</h2>
             <p>
