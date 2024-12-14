@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>High Dynamic Range</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    <header class="header">
+        <img class="header-image" src='data/hdr-header.png' alt='Header Image'>
+        <div class="header-overlay"></div>
+        <div class="title-container">
+            <h1 class="title">High Dynamic Range</h1>
+            <h2 class="subtitle"> by Gurvir Kooner and Daniel Hodde</h2>
+        </div>
+    </header>
+    
+    <main>
+        <section id="Background">
+            <h2>Background</h2>
+            <p>
+                Modern cameras cannot capture the full dynamic range of common scenes that one might encounter. 
+                Photographers often get around this by combining information from multiple exposures of the same scene.
+                This project aims to automatically combine multiple exposures into an hdr radiance map, and then from 
+                this radiance map to an image that can be displayed. 
+                <br><br>
+                To start, we have a collection of several images of roughly stationary scenes taken at different exposures
+                which produces a set of images that looks like the following:
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">1/2s</p>
+                    <img src='data/bonsai/1_2.jpg' alt='1/2s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1/4s</p>
+                    <img src='data/bonsai/1_4.jpg' alt='1/4s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1/10s</p>
+                    <img src='data/bonsai/1_10.jpg' alt='1/10s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1/25s</p>
+                    <img src='data/bonsai/1_25.jpg' alt='1/25s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1/320s</p>
+                    <img src='data/bonsai/1_320.jpg' alt='1/320s'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Radiance Mapping">
+            <h2>Radiance Mapping</h2>
+            <p>
+                With these images we aim to build HDR radiance maps in accordance with the process outlined 
+                in Debevec and Malik 1997. The observed pixel value \( Z_{ij} \) for pixel \( i \) in image 
+                \( j \) is expressed as \( Z_{ij} = f(E_i \Delta t_j) \), where \( E_i \) is the unknown 
+                scene radiance at pixel \( i \), and \( E_i \Delta t_j \) represents the exposure at a 
+                given pixel. To simplify calculations, instead of solving for \( f \), we solve for 
+                \( g = \ln(f^{-1}) \), mapping pixel values (\( Z \)) from 0 to 255 to the log of exposure 
+                values: \( g(Z_{ij}) = \ln(E_i) + \ln(t_j) \) (Equation 2 in Debevec). Although \( g \) 
+                and \( E_i \) are unknown, the scene's static nature ensures \( E_i \) remains constant 
+                across the image sequence. After solving for \( g \), radiance can be recovered via 
+                \( \ln(E_i) = g(Z_{ij}) - \ln(\Delta t_j) \) (Equation 5 in Debevec). To enhance robustness, 
+                two factors are considered: 
+            </p>
+            <ul style="list-style-type: none; margin-left: 1.5em; padding-left: 0;">
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                  (1) \( g \) is expected to be smooth, and its second derivative is penalized using 
+                  finite differences: \( g''(x) = g(x-1) + g(x+1) - 2g(x) \). This applies for all 
+                  integers in \( g \)'s domain except at boundaries (\( g(0) \) and \( g(255) \)).
+                </li>
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                  (2) Each exposure only provides reliable information for well-exposed pixels; weighting 
+                  functions, such as a triangle peaking at \( Z = 127.5 \) and zero at \( Z = 0 \) and 
+                  \( Z = 255 \), are used to prioritize these pixels (Equation 6 in Debevec). This weighting 
+                  is applied both when solving for \( g \) and building the HDR radiance map.
+                </li>
+            </ul>
+            <p>
+                The resulting functions for our example set of images are as follows:
+            </p>
+            <div class="single-image-container">
+                <img class="single-image" src='data/g.png' alt='g functions'>
+            </div>
+            <p>
+                Our radiance map for this scene is:
+            </p>
+            <div class="single-image-container">
+                <img class="single-image" src='data/radiance-map.png' alt='radiance map'>
+            </div>
+        </section>
+
+        <section id="Tone Mapping">
+            <h2>Tone Mapping</h2>
+            <p>
+                After constructing the radiance map, we can now apply tone mapping to compress the dynamic 
+                range so we can see both the light and dark regions of the images. We implemented three tone 
+                mapping operators, Global Scale - which subtracts the min value and rescales the result to be 
+                within [0, 1], Global Simple - which applies a pixel-wise transform then applies global scaling, 
+                and Durand - which follows these steps:
+            </p>
+            <ul style="list-style-type: none; margin-left: 1.5em; padding-left: 0;">
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                    (1) Input is linear RGB values of radiance     
+                </li>
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                    (2) Compute intensity \((I)\) by averaging color channels
+                </li>
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                    (3) Compute chrominance channels: \((R/I, G/I, B/I)\)
+                </li>
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                    (4) Compute log intensity: \(L = log_{2}(I)\)
+                </li>
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                    (5) Filter with bilateral filter: \(B = bf(L))
+                </li>
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                    (6) Compute detail layer: \(D = L - B\)
+                </li>
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                    (7) Apply offset and scale to base: \(B^\prime = (B - o) * s\)
+                </li>
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                    (8) Reconstruct log intensity: \(O = 2^(B^\prime + D)\)
+                </li>
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                    (9) Put back teh colors: \(R^\prime, G^\prime, B^\prime = O * (R/I, G/I, B/I)\)
+                </li>
+                <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                    (10) Apply gamma compression
+                </li>
+            </ul>
+            <p>
+                The various mapping methods produce the following results on our sample set of images:
+            </p>
+            <div class="single-image-container">
+                <img class="single-image" src='data/tone-map.png' alt='tone map'>
+            </div>
+        </section>
+        
+        <section id="Results">
+            <span style="display:block; margin-top:-85px;"></span>
+            <h2>Results</h2>
+            <p>
+                Below are the results of applying the various tone mappings on the image dataset:
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Global Scale</p>
+                    <img src='code/results/arch-global_scale.png' alt='Global Scale'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Global Simple</p>
+                    <img src='code/results/arch-global_simple.png' alt='Global Simple'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Durand</p>
+                    <img src='code/results/arch-durand.png' alt='Durand'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='code/results/bonsai-global_scale.png' alt='Global Scale'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/bonsai-global_simple.png' alt='Global Simple'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/bonsai-durand.png' alt='Durand'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='code/results/chapel-global_scale.png' alt='Global Scale'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/chapel-global_simple.png' alt='Global Simple'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/chapel-durand.png' alt='Durand'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='code/results/garage-global_scale.png' alt='Global Scale'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/garage-global_simple.png' alt='Global Simple'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/garage-durand.png' alt='Durand'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='code/results/garden-global_scale.png' alt='Global Scale'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/garden-global_simple.png' alt='Global Simple'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/garden-durand.png' alt='Durand'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='code/results/house-global_scale.png' alt='Global Scale'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/house-global_simple.png' alt='Global Simple'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/house-durand.png' alt='Durand'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='code/results/mug-global_scale.png' alt='Global Scale'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/mug-global_simple.png' alt='Global Simple'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/mug-durand.png' alt='Durand'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='code/results/window-global_scale.png' alt='Global Scale'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/window-global_simple.png' alt='Global Simple'>
+                </div>
+                <div class="image-item">
+                    <img src='code/results/window-durand.png' alt='Durand'>
+                </div>
+            </div>
+        </section>
+        
+        <section id="Using Our Own Images">
+            <h2>Using Our Own Images</h2>
+            <p>
+                We also expanded our examples by taking our own images of a scene and applying the HDR 
+                process to them:
+            </p>
+            <p class="image-caption">IHouse Courtyard</p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">1/2s</p>
+                    <img src='data/christmas-tree/1_2.png' alt='1/2s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1/5s</p>
+                    <img src='data/christmas-tree/1_5.png' alt='1/5s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1/15s</p>
+                    <img src='data/christmas-tree/1_15.png' alt='1/15s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1_80s</p>
+                    <img src='data/christmas-tree/1_80.png' alt='1/80s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1/200s</p>
+                    <img src='data/christmas-tree/1_200.png' alt='1/200s'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Radiance Map (Mean)</p>
+                    <img src='code/results/xmas-hdr_radiance_map_mean.png' alt='Radiance Map (Mean)'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Radiance Map</p>
+                    <img src='code/results/xmas-hdr_radiance_map.png' alt='Radiance Map'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Global Scale</p>
+                    <img src='code/results/xmas-global_scale.png' alt='Global Scale'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Global Simple</p>
+                    <img src='code/results/xmas-global_simple.png' alt='Global Simple'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Durand</p>
+                    <img src='code/results/xmas-durand.png' alt='Durand'>
+                </div>
+            </div>
+
+            <p class="image-caption">Edmonds Cafe</p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">1/2s</p>
+                    <img src='data/edmonds/1_2.png' alt='1/2s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1/6s</p>
+                    <img src='data/edmonds/1_6.png' alt='1/6s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1/15s</p>
+                    <img src='data/edmonds/1_15.png' alt='1/15s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1_40s</p>
+                    <img src='data/edmonds/1_40.png' alt='1/40s'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">1/125s</p>
+                    <img src='data/edmonds/1_125.png' alt='1/125s'>
+                </div>
+            </div>
+
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Radiance Map (Mean)</p>
+                    <img src='code/results/edmonds-hdr_radiance_map_mean.png' alt='Radiance Map (Mean)'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Radiance Map</p>
+                    <img src='code/results/edmonds-hdr_radiance_map.png' alt='Radiance Map'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Global Scale</p>
+                    <img src='code/results/edmonds-global_scale.png' alt='Global Scale'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Global Simple</p>
+                    <img src='code/results/edmonds-global_simple.png' alt='Global Simple'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Durand</p>
+                    <img src='code/results/edmonds-durand.png' alt='Durand'>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Daniel Hodde & Gurvir Kooner</p>
+    </footer>
+</body>
+</html>
