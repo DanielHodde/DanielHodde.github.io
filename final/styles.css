@@ -1,0 +1,149 @@
+/* General */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+p {
+  color: rgb(85, 85, 85);
+}
+
+/* Flexbox layout for the 5 images */
+.image-container {
+  display: flex;
+  justify-content: space-between; 
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.header {
+  position: relative;
+  background-image: url('data/doe_header.png');
+  background-size: cover;
+  background-position: center;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0px;
+  left: 0;
+  z-index: 0;
+}
+
+.header img, .header-image {
+  border-radius: 0; /* No rounding for header images */
+}
+
+/* Dark overlay on top of the header images */
+.header-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(123, 123, 123, 0.5);
+  z-index: 1;
+}
+
+/* Title container to ensure text is on top of the images */
+.title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  z-index: 2;
+}
+
+/* Title and subtitle styling */
+.title, .subtitle {
+  color: #ffffff;
+  font-size: 3rem;
+  text-align: center;
+  line-height: 1.2;
+  margin: 0;
+  z-index: 1;
+  position: relative;
+  text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+}
+
+.subtitle {
+  font-size: 2rem;
+}
+
+
+/* Projects Section */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+  margin-top: 100px;
+}
+
+.project-card {
+  border: 1px solid rgb(163, 163, 163);
+  background: rgb(250, 250, 250);
+  border-radius: 2rem;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.project-img {
+  border-radius: 2rem;
+  width: 90%;
+  height: auto;
+}
+
+.project-title {
+  margin: 1rem 0;
+  font-size: 1.5rem;
+  color: black;
+}
+
+.project-btn {
+  color: black;
+  border: 1px solid rgb(163, 163, 163);
+  padding: 0.5rem 1rem;
+  border-radius: 1rem;
+  transition: background 300ms ease, color 300ms ease;
+}
+
+.project-btn:hover {
+  background: rgb(53, 53, 53);
+  color: white;
+}
+
+/* FOOTER SECTION */
+
+footer {
+  height: 26vh;
+  margin: 0 1rem;
+}
+
+footer p {
+  text-align: center;
+}
