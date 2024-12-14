@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Quilting</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+</head>
+<body>
+    <header class="header">
+        <img class="header-image" src='data/quilting-header.png' alt='Header Image'>
+        <div class="header-overlay"></div>
+        <div class="title-container">
+            <h1 class="title">Image Quilting</h1>
+            <h2 class="subtitle"> by Gurvir Kooner and Daniel Hodde</h2>
+        </div>
+    </header>
+    
+    <main>
+        <section id="Overview">
+            <h2>Overview</h2>
+            <p>
+                This project aims to implement the image quilting algorithm for texture synthesis and transfer 
+                based on the 2001 SIGGRAPH paper by Efros and Freeman. Texture synthesis is the creation of a larger 
+                texture from a small sample, and texture transfer is giving an object the appearance of a sample while 
+                preserving its shape. In texture synthesis you sample patches and lay them in overlapping patterns while 
+                computing a path along pixels with similar intensities in the overlapping region and select which region 
+                to draw from. Texture transfer on the other hand is done by encouraging sampled patches to have similar 
+                appearance to a target image and match the overlapping regions of already sampled patches. 
+            </p>
+        </section>
+
+        <section id="Randomly Sampled Texture">
+            <h2>Randomly Sampled Texture</h2>
+            <p>
+                The <code>quilt_random</code> function generates a new texture by filling 
+                an output image of size <code>out_size</code> with randomly sampled square 
+                patches of size <code>patch_size</code> taken from an input texture <code>sample</code>. 
+                The function iterates over the output image grid, selecting random top-left coordinates 
+                from the input texture to extract patches without exceeding its boundaries. These 
+                patches are then placed sequentially into the corresponding grid locations in the 
+                output image. The result is a randomized, quilted texture that mimics the input 
+                texture's appearance but without blending or smoothing between patches. The result of this 
+                process looks like the following:
+            </p>
+            <div class="image-comparison">
+                <div class="column">
+                    <p class="image-caption">Original Image</p>
+                    <img src='data/white_small.jpg' alt='Original Image'>
+                </div>
+                <div class="column">
+                    <p class="image-caption">Random Sampled Texture</p>
+                    <img src='data/random_quilt.jpg' alt='Random Sampled Texture'>
+                </div>
+            </div>
+        </section>
+
+        <section id="Overlapping Patches">
+            <h2>Overlapping Patches</h2>
+            <p>
+                The <code>quilt_simple</code> function creates a texture by sampling square patches 
+                from an input texture and arranging them to fill an output image of size <code>out_size</code>. 
+                Starting with a random patch in the upper-left corner, subsequent patches are sampled to 
+                overlap with existing ones, ensuring alignment in horizontal, vertical, or both directions, 
+                depending on their position in the grid. The overlap between patches is evaluated using a 
+                helper function, <code>ssd_patch</code>, which computes the cost of sampling a patch based 
+                on the sum of squared differences (SSD) between the overlapping regions of the sampled and 
+                existing patches. This computation uses a masked template for efficiency, leveraging filtering 
+                operations to calculate the SSD for all channels of the input texture. Another helper 
+                function, <code>choose_sample</code>, selects a patch with a low cost from the cost image, 
+                where the selection threshold is determined by a tolerance parameter <code>tol</code>. A 
+                lower <code>tol</code> results in deterministic copying of the input texture, while a higher 
+                <code>tol</code> introduces more randomness for diverse textures. Once a patch is selected, 
+                its pixels are copied into the corresponding position in the output image. As the results below 
+                show, this process produces slightly improved quilts. 
+            </p>
+            <div class="image-comparison">
+                <div class="column">
+                    <p class="image-caption">Original Image</p>
+                    <img src='data/white_small.jpg' alt='Original Image'>
+                </div>
+                <div class="column">
+                    <p class="image-caption">Simple Quilt</p>
+                    <img src='data/simple_quilt.jpg' alt='Simple Quilt'>
+                </div>
+            </div>
+        </section>
+        
+        <section id="Seam Finding">
+            <h2>Seam Finding</h2>
+            <p>
+                As is evident in the previous examples, there are still very visible seams between the patches. 
+                The next step is to incorporate seam finding to remove these edge artifacts according to 
+                section 2.1 of the paper. This process works by finding the min-cost contiguous path from left to 
+                right in a patch according to the square difference of the output and new patch. This addition 
+                further improves the quilt with less defined edges.
+            </p>
+            <div class="image-comparison">
+                <div class="column">
+                    <p class="image-caption">Original Image</p>
+                    <img src='data/white_small.jpg' alt='Original Image'>
+                </div>
+                <div class="column">
+                    <p class="image-caption">Quilt with Seam Finding</p>
+                    <img src='data/cut_quilt.jpg' alt='Quilt with Seam Finding'>
+                </div>
+            </div>
+        </section>
+        
+        <section id="Seam Finding"></section>
+            <h2>Seam Finding</h2>
+            <p>
+                The <code>texture_transfer</code> function generates an output texture guided 
+                by a target image (<code>guidance_im</code>) by modifying the <code>quilt_cut</code> 
+                approach to incorporate a target-driven cost term. It begins by placing a 
+                random patch from the sample image in the upper-left corner of the output. 
+                For each subsequent patch, it calculates two cost components: the overlap cost, 
+                which ensures smooth transitions between adjacent patches using the sum of 
+                squared differences (SSD) between overlapping regions, and the target cost, 
+                which matches the sampled patch to the corresponding region in the target image. 
+                These costs are combined with a weighting factor, <code>alpha</code>, to balance 
+                texture similarity and adherence to the target image. A low-cost patch is then 
+                selected and copied into the output image. Seams between patches are optimized 
+                using seam-cutting techniques to ensure smooth boundaries. The function iterates 
+                over the grid of patches, progressively filling the output while minimizing 
+                discontinuities and aligning the texture with the target's structure. This process 
+                results in a synthesized texture that blends the input sample's characteristics 
+                with the appearance of the target image.
+            </p>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <p class="image-caption">Source Texture</p>
+                    <img src='data/sketch.jpg' alt='Source Texture'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Target Image</p>
+                    <img src='data/feynman.jpg' alt='Target Image'>
+                </div>
+                <div class="image-item">
+                    <p class="image-caption">Texture Transfer</p>
+                    <img src='data/texture_transfer.jpg' alt='Texture Transfer'>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Daniel Hodde & Gurvir Kooner</p>
+    </footer>
+</body>
+</html>
