@@ -121,7 +121,7 @@
                     (4) Compute log intensity: \(L = log_{2}(I)\)
                 </li>
                 <li style="text-indent: -1.5em; padding-left: 1.5em;">
-                    (5) Filter with bilateral filter: \(B = bf(L))
+                    (5) Filter with bilateral filter: \(B = bf(L)\)
                 </li>
                 <li style="text-indent: -1.5em; padding-left: 1.5em;">
                     (6) Compute detail layer: \(D = L - B\)
@@ -130,7 +130,7 @@
                     (7) Apply offset and scale to base: \(B^\prime = (B - o) * s\)
                 </li>
                 <li style="text-indent: -1.5em; padding-left: 1.5em;">
-                    (8) Reconstruct log intensity: \(O = 2^(B^\prime + D)\)
+                    (8) Reconstruct log intensity: \(O = 2^{(B^\prime + D)}\)
                 </li>
                 <li style="text-indent: -1.5em; padding-left: 1.5em;">
                     (9) Put back teh colors: \(R^\prime, G^\prime, B^\prime = O * (R/I, G/I, B/I)\)
@@ -267,7 +267,7 @@
                     <img src='data/christmas-tree/1_15.png' alt='1/15s'>
                 </div>
                 <div class="image-item">
-                    <p class="image-caption">1_80s</p>
+                    <p class="image-caption">1/80s</p>
                     <img src='data/christmas-tree/1_80.png' alt='1/80s'>
                 </div>
                 <div class="image-item">
@@ -314,7 +314,7 @@
                     <img src='data/edmonds/1_15.png' alt='1/15s'>
                 </div>
                 <div class="image-item">
-                    <p class="image-caption">1_40s</p>
+                    <p class="image-caption">1/40s</p>
                     <img src='data/edmonds/1_40.png' alt='1/40s'>
                 </div>
                 <div class="image-item">
