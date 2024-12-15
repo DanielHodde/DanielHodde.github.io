@@ -45,7 +45,8 @@
                 patches are then placed sequentially into the corresponding grid locations in the 
                 output image. The result is a randomized, quilted texture that mimics the input 
                 texture's appearance but without blending or smoothing between patches. The result of this 
-                process looks like the following:
+                process with <strong>patch size: 15</strong> and <strong>output size: 200</strong> 
+                looks like the following:
             </p>
             <div class="image-comparison">
                 <div class="column">
@@ -75,8 +76,10 @@
                 where the selection threshold is determined by a tolerance parameter <code>tol</code>. A 
                 lower <code>tol</code> results in deterministic copying of the input texture, while a higher 
                 <code>tol</code> introduces more randomness for diverse textures. Once a patch is selected, 
-                its pixels are copied into the corresponding position in the output image. As the results below 
-                show, this process produces slightly improved quilts. 
+                its pixels are copied into the corresponding position in the output image. This process was 
+                performed with <strong>patch size: 35</strong>, <strong>overlap size: 11</strong> and 
+                <strong>tolerance: 5</strong>. As the results below show, this process produces 
+                slightly improved quilts. 
             </p>
             <div class="image-comparison">
                 <div class="column">
@@ -98,7 +101,12 @@
                 section 2.1 of the paper. This process works by finding the min-cost contiguous path from left to 
                 right in a patch according to the square difference of the output and new patch. This addition 
                 further improves the quilt with less defined edges.
+                <br><br>
+                The following is a visualization of what this process is doing for each patch:
             </p>
+            <div class="single-image-container">
+                <img class="small-single-image" src='data/seam-finding-viz.png' alt='seam-finding-viz'>
+            </div>
             <div class="image-comparison">
                 <div class="column">
                     <p class="image-caption">Original Image</p>
@@ -107,6 +115,22 @@
                 <div class="column">
                     <p class="image-caption">Quilt with Seam Finding</p>
                     <img src='data/cut_quilt.jpg' alt='Quilt with Seam Finding'>
+                </div>
+            </div>
+            <div class="image-comparison">
+                <div class="column">
+                    <img src='data/chihuly-blue.png' alt='Original Image'>
+                </div>
+                <div class="column">
+                    <img src='data/chihuly-blue-quilt.png' alt='Quilt with Seam Finding'>
+                </div>
+            </div>
+            <div class="image-comparison">
+                <div class="column">
+                    <img src='data/chihuly-green.png' alt='Original Image'>
+                </div>
+                <div class="column">
+                    <img src='data/chihuly-green-quilt.png' alt='Quilt with Seam Finding'>
                 </div>
             </div>
         </section>
@@ -143,6 +167,17 @@
                 <div class="image-item">
                     <p class="image-caption">Texture Transfer</p>
                     <img src='data/texture_transfer.jpg' alt='Texture Transfer'>
+                </div>
+            </div>
+            <div class="image-gallery">
+                <div class="image-item">
+                    <img src='data/cells.png' alt='Source Texture'>
+                </div>
+                <div class="image-item">
+                    <img src='data/gurvir.png' alt='Target Image'>
+                </div>
+                <div class="image-item">
+                    <img src='data/gurvir-texture.png' alt='Texture Transfer'>
                 </div>
             </div>
         </section>

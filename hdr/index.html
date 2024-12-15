@@ -122,6 +122,20 @@
                 </li>
                 <li style="text-indent: -1.5em; padding-left: 1.5em;">
                     (5) Filter with bilateral filter: \(B = bf(L)\)
+                    <ul>
+                        <li style="text-indent: -1.5em; padding-left: 1.5em;">
+                            For our implementation of the bilateral filter we decided 
+                            to use piecewise-linear bilateral filtering as outlined in 
+                            the Durand paper. This implementation achieves speedup over a normal 
+                            bilateral filter by discretizing the set of possible signal intensities 
+                            into <code>NB_SEGMENT</code> values \(\{i^j\}\) and computer a linear 
+                            filter for each such value. The pseudocode for this algorithm is as 
+                            follows:
+                        </li>
+                        <div class="single-image-container">
+                            <img class="small-single-image" src='data/piecewise-bilateral.png' alt='piecewise-bilateral'>
+                        </div>
+                    </ul>
                 </li>
                 <li style="text-indent: -1.5em; padding-left: 1.5em;">
                     (6) Compute detail layer: \(D = L - B\)
@@ -133,12 +147,25 @@
                     (8) Reconstruct log intensity: \(O = 2^{(B^\prime + D)}\)
                 </li>
                 <li style="text-indent: -1.5em; padding-left: 1.5em;">
-                    (9) Put back teh colors: \(R^\prime, G^\prime, B^\prime = O * (R/I, G/I, B/I)\)
+                    (9) Put back the colors: \(R^\prime, G^\prime, B^\prime = O * (R/I, G/I, B/I)\)
                 </li>
                 <li style="text-indent: -1.5em; padding-left: 1.5em;">
                     (10) Apply gamma compression
                 </li>
             </ul>
+            <p>
+                The base and detail layers from this process look like the following:
+            </p>
+            <div class="image-comparison">
+                <div class="column">
+                    <p class="image-caption">Base (Large Scale Structure)</p>
+                    <img src='data/base_layer_log_intensity.png' alt='Base'>
+                </div>
+                <div class="column">
+                    <p class="image-caption">Detail</p>
+                    <img src='data/detail.png' alt='Detail'>
+                </div>
+            </div>
             <p>
                 The various mapping methods produce the following results on our sample set of images:
             </p>
@@ -246,8 +273,8 @@
             </div>
         </section>
         
-        <section id="Using Our Own Images">
-            <h2>Using Our Own Images</h2>
+        <section id="Using Our Own Images (B&W)">
+            <h2>Using Our Own Images (B&W)</h2>
             <p>
                 We also expanded our examples by taking our own images of a scene and applying the HDR 
                 process to them:

@@ -166,6 +166,7 @@ img {
     gap: 60px; 
     margin-top: 20px;
     margin-bottom: 90px;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 
 .column {
@@ -177,7 +178,6 @@ img {
     height: auto;
     width: auto;
     object-fit: cover;
-    /* min-width: 350px; */
     min-height: 300px;
     max-width: 550px;
     max-height: 400px;
@@ -185,14 +185,36 @@ img {
     background-color: transparent;
     display: block;
     margin: 10px auto; 
-    /* margin-bottom: 50px; */
+}
+
+/* Responsive styles */
+@media (max-width: 768px) { /* Adjust for tablets and smaller screens */
+    .column {
+        width: 90%; /* Full width for smaller screens */
+        margin-bottom: 20px; /* Add spacing between stacked columns */
+    }
+
+    .image-comparison {
+        gap: 20px; /* Reduce the gap on smaller screens */
+    }
+}
+
+@media (max-width: 480px) { /* Adjust for very small screens */
+    .column {
+        width: 100%; /* Ensure images stack and take full width */
+    }
+
+    .column img {
+        max-width: 100%; /* Prevent images from exceeding screen width */
+        height: auto; /* Maintain aspect ratio */
+    }
 }
 
 .single-image-container {
     display: flex;
     justify-content: center;  /* Center horizontally */
     align-items: center;      /* Center vertically */
-    width: 100%;    
+    width: 95%;    
     /* max-width: 700px; */
     margin: 10px auto;          
 }
@@ -209,6 +231,20 @@ img {
     border-radius: 0.5rem;
     min-width: 500px;
     margin-top: -20px;
+}
+
+/* Specific styling for the image */
+.small-single-image {
+    /* max-height: 300px;       */
+    width: 100%;  
+    height: auto;           
+    display: block;           
+    max-width: 50%;         
+    margin-left: auto;        
+    margin-right: auto;       
+    border-radius: 0.5rem;
+    min-width: 500px;
+    /* margin-top: -20px; */
 }
 
 .stacked-and-tall-container {
