@@ -1,0 +1,293 @@
+<html>
+	<head>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+		<style>
+			h1 {
+				text-align: center;
+			}
+
+			.container {
+				margin: 0 auto;
+				padding: 60px 20%;
+			}
+
+			figure {
+				text-align: center;
+			}
+
+			img {
+				display: inline-block;
+			}
+
+			body {
+				font-family: 'Inter', sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+		<h1>CS184/284A Spring 2025 Homework 2 Write-Up</h1>
+		<div style="text-align: center;">Names: Gurvir Kooner and Daniel Hodde</div>
+
+		<br>
+
+		Link to webpage: <a href="https://hodde.dev/hw2">https://hodde.dev/hw2</a>
+
+		<br>
+		
+		Link to GitHub repository: <a href="https://github.com/DanielHodde/DanielHodde.github.io">https://github.com/DanielHodde/DanielHodde.github.io</a>
+
+		<figure>
+			<img src="teapot.png" alt="Teapot" style="width:50%"/>
+			<figcaption></figcaption>
+		</figure>
+
+		<!--
+		We've already added one heading per part, to make your write-up as navigable when grading. Please fit your write-up within these sections!
+		-->
+
+		<h2>Overview</h2>
+		This homework consists of two main parts. We first implemented Bezier curve evaluation using de Casteljau's algorithm and then extended this implementation to surfaces 
+		to be able to evaluate more complex 3d shapes. 
+		<br><br>
+		The second part of this homework focused on operations relating to meshes. We first implemented area-weighted normals 
+		to be able to properly implement shading across mesh surfaces. Next we implemented two edge operations, flipping and splitting. These two operations created the building blocks 
+		of being able to loop subdivide meshes and be able to upsample to create smoother final objects. 
+
+		<h2>Section I: Bezier Curves and Surfaces</h2>
+
+		<h3>Part 1: Bezier curves with 1D de Casteljau subdivision</h3>
+		De Casteljau's algorithm is a recursive algorithm that can be used to compute points along a Bezier curve. When given a set of control points and a scalar paramter t, 
+		at each recursive step of the algorithm, a linear interploation at each set of adjacent points is performed according to the following: 
+		\(p_i' = \text{lerp}(p_i, p_{i+1}, t) = (1 - t) p_i + t p_{i+1}\). The result of this step produces one less point than the previous step and the process is continued 
+		until one point remains. This point lies exactly on the curve at the given parameter t. The following images are an example of this procedure being performed step by step, 
+		as well as another slightly modified example. 
+		<br><br><br>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bez_s1.png" width="400px"/>
+				  <figcaption>Step 1</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bez_s2.png" width="400px"/>
+				  <figcaption>Step 2</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bez_s3.png" width="400px"/>
+				  <figcaption>Step 3</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bez_s4.png" width="400px"/>
+				  <figcaption>Step 4</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bez_s5.png" width="400px"/>
+				  <figcaption>Step 5</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="bez_s6.png" width="400px"/>
+				  <figcaption>Step 6</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="bez_curve.png" width="400px"/>
+				  <figcaption>Bezier Curve</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="new_bez.png" width="400px"/>
+				  <figcaption>Modified Bezier Curve</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h3>Part 2: Bezier surfaces with separable 1D de Casteljau</h3>
+		De Casteljau's algorithm pretty naturally extends to 2D to be able ot evaluate Bezier surfaces instead of just curves. The way this process works 
+		is by performing the interpolation process in two independent directions using parameters u and v. We first apply de Casteljau's algorithm in much 
+		the same way as we did in part 1 applying in just one direction, say along the rows of given control points. This gives a set of curves that can be used 
+		as intermediate points in the perpendicular direction where we can perform the process once again to produce a final point exactly on the surface at 
+		parameter (u, v).
+
+		<figure>
+			<img src="teapot_bez.png" alt="Teapot" style="width:50%"/>
+			<figcaption>Teapot with Bezier Surfaces</figcaption>
+		</figure>
+
+		<h2>Section II: Triangle Meshes and Half-Edge Data Structure</h2>
+
+		<h3>Part 3: Area-weighted vertex normals</h3>
+		To compute the area-weighted vertex normals, halfedges are used to traverse through each face adjacent to the given vertex. At each neighboring face the area of that 
+		triangle is calculated by summing the corss products of pairs of vertex positions and weighting the normal by its area. This accumulated area-weighted normal vector is then
+		normalized to obtain the approximate vertex normal and is use to improve shading and the smoothness across surfaces. The following is a comparison of the teapot with and without 
+		this shading, and as you can see the result of this process produces a far smoother and less flat end result. 
+		<br><br><br>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="unshaded_teapot.png" width="400px"/>
+				  <figcaption>Unshaded Teapot</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="phong_teapot.png" width="400px"/>
+				  <figcaption>Phong Shading Teapot</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h3>Part 4: Edge flip</h3>
+		The edge flip operation does not add any new edges, but rather points existing edges to new vertices, namely pointing what previously went from vertex c to b across the middle 
+		of two triangles, to vertex a to d. This inherently will change many of the halfedge relations and they need to be carfully managed. The main debugging/implementation trick 
+		was just to create a before and after diagram of all halfedges and vertices and move halfedge by halfedge visually looking at what relations change at each step. Once this was 
+		completed the final result of edge flips looks something like the following:
+		<br><br><br>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="pre_flip.png" width="400px"/>
+				  <figcaption>Before Edge Flips</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="post_flip.png" width="400px"/>
+				  <figcaption>After Edge Flips</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+
+		<h3>Part 5: Edge split</h3>
+		The edge split operation, much like the edge flip operation requires careful management of halfedge relations, however this time even more so because the split operation 
+		requires the creation of new faces, halfedges and a vertex. There were two main tricky bugs that we encountered during the process. At first we accidentally reused the entire 
+		edge in the direction that was not split. While on paper this visually looks ok that edge should actually be split into two, creating one new edge, otherwise the halfedge would 
+		be referenced across two different faces which is not correct behavior. This caused the triangle to degenerate and not render properly in the final image, creating a hole.
+		<br><br>
+		The next error that was much harder to debug was a hangup when running the split operation. This was caused by a halfedge pointing to the wrong next. Since the traversal around 
+		the mesh were stopped when the original halfedge is reached, but the next halfedge could never reach the original, this caused an infinite loop that was extremely tricky to find. 
+		Ultimately the best way to solve all of the bugs we encountered was to make a diagram like the following and carfefully visually run through all of the connections that should change 
+		after a split operation. 
+
+		<figure>
+			<img src="edge_split_diagram.jpg" alt="Edge Split Diagram" style="width:50%"/>
+			<figcaption>Edge Split Diagram</figcaption>
+		</figure>
+
+		<br><br>
+		After succesfully debugging the result of the mesh split operations looks like the following:
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="pre_flip.png" width="400px"/>
+				  <figcaption>Before Edge Split</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="split.png" width="400px"/>
+				  <figcaption>After Edge Split</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="pre_flip.png" width="400px"/>
+				  <figcaption>Before Edge Split/Flips</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="flip_split.png" width="400px"/>
+				  <figcaption>After Edge Split/Flips</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+
+		<h3>Part 6: Loop subdivision for mesh upsampling</h3>
+		To perform loop subdivision we followed the recommended three step approach that computes positions prior to performing splits and flips. 
+		First the position of both new and old vertices was calculated. For new vertices their position is calculated as \( \frac{3}{8}(A + B) + \frac{1}{8}(C + D) \), 
+		where A and B are the original verices of the edge and C and D are the opposite vertices of adjacent triangles. For existing vertices their updated position 
+		is calculated as \( (1 - n \cdot u) \cdot \text{original_position} + u \cdot \text{original_neighbor_position_sum} \), where n is the vertex degree and <code>u</code> is 
+		a constant, <code>original position</code> is as described, and <code>original_neighbor_position_sum</code> is the sum of all original positions of the neighboring 
+		vertices. 
+		<br><br>
+		After the positions are calculated, all of the original edges are iterated over and split, flagging all of the newly created edges and vertices to distinguish between 
+		them and the existing ones. Then any diagonal edge that connects an old vertex to a new one is flipped. Finally all of the vertex positions are updated in the subdivided mesh with  
+		the values that were already computed in the first step. 
+		<br><br>
+		For debugging, as with all previous steps, it was helpful to draw out a diagram of what was happening with just a couple triangles to figure out what needed to happen at each step. 
+		<br><br><br>
+		Although subdivision is now implemented you can see from the following example that any sharp corners or edges are dramatically smoothed out after multiple iterations. With an uneven
+		amount of edges shapes also split unevenely as can be seen below. 
+		<br><br>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="cube_1.png" width="400px"/>
+				  <figcaption>Cube Level 1</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="cube_2.png" width="400px"/>
+				  <figcaption>Cube Level 2</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="cube_3.png" width="400px"/>
+				  <figcaption>Cube Level 3</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="cube_4.png" width="400px"/>
+				  <figcaption>Cube Level 4</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<br><br>
+		The overall shape can be better maintained by performing preprocessing to create both more edges so that the interpolation is not as drastic between points on an edge, 
+		as well as to create a symtrical distribution of edges before subdivision occurs. The result is a shape that better keeps its structure after repeated subdivisions. 
+		<br><br>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="cube_pp_1.png" width="400px"/>
+				  <figcaption>Preprocessed Cube Level 1</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="cube_pp_2.png" width="400px"/>
+				  <figcaption>Preprocessed Cube Level 2</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="cube_pp_3.png" width="400px"/>
+				  <figcaption>Preprocessed Cube Level 3</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="cube_pp_4.png" width="400px"/>
+				  <figcaption>Preprocessed Cube Level 4</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		
+
+		</div>
+	</body>
+</html>
