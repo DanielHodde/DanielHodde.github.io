@@ -1,0 +1,117 @@
+<html>
+	<head>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+		<style>
+			h1 {
+				text-align: center;
+			}
+
+			.container {
+				margin: 0 auto;
+				padding: 60px 20%;
+			}
+
+			figure {
+				text-align: center;
+			}
+
+			img {
+				display: inline-block;
+			}
+
+			body {
+				font-family: 'Inter', sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+		<h1>Procedural Terrain Generation with Style Transfer</h1>
+		<div style="text-align: center;">
+			<h2>Final Project Proposal</h2>
+		</div>
+		<div style="text-align: center;">By Daniel Hodde, Gurvir Kooner, Richard Yang, Trustin Nguyen</div>
+
+		<br>
+
+		Link to webpage:<a href="https://hodde.dev/final_proposal">https://hodde.dev/final_proposal</a>
+
+		<br>
+
+		<!-- Link to GitHub repository: <a href="https://github.com/cal-cs184-student/sp25-hw4-davir">https://github.com/cal-cs184-student/sp25-hw4-davir</a> -->
+
+		<figure>
+			<img src="noise_generation.png" alt="noise generation" style="width:70%"/>
+			<figcaption></figcaption>
+		</figure>
+
+		<!--
+		We've already added one heading per part, to make your write-up as navigable when grading. Please fit your write-up within these sections!
+		-->
+
+		<h2>Summary</h2>
+		This project will explore several different methods of terrain generation. In addition to the base methods of terrain generation, Neural Style Transfer 
+		will be utilized apply the overall style of real world terrains to our generated ones. The combination of these methods will in theory produce a more 
+		natural looking terrain map for terrain generation. 
+
+		<h2>Problem Description</h2>
+		Terrain generation is a concept that is widely used, especially across the gaming industry to generate the worlds you play in. You could create an 
+		extremely realistic world by manually sculpting every terrain feature in the world, however as game worlds are expanding, this is becoming less and 
+		less feasible. To speed this process up developers have turned to procedural generation to automatically create vast worlds. However this presents 
+		its own set of challenges. Terrain generation algorithms often utilize noise to determine height maps of a terrain, but this often leads to unnatural 
+		looking peaks and valleys as pure randomness does not encompass the variations in the natural world. There are many ways to solve this problem, including 
+		erosion based algorithms, cellular automata, and various smoother noise generators like perlin and simplex. While many of these methods can work quite 
+		well they can also be quite computationally intensive. The goal of combining these methods with something like style transfer is to deliver something 
+		that is both realistic and computationally feasible for a game setting. 
+		<br><br>
+
+		<h2>Goals and Deliverables</h2>
+		<h3>Planned Deliverables</h3>
+		<ul>
+			<li>Generate a heightmap from perlin noise.</li>
+			<li>Apply various style transfers to enhance the result of the original terrain
+			</li>
+			<li>Visualize final terrain map, should look something like the following image</li>
+		</ul>
+
+		<figure>
+			<img src="terrain-visualization.jpeg" alt="noise generation" style="width:70%"/>
+			<br><br>
+			<figcaption>Terrain map visualization</figcaption>
+		</figure>
+
+		<br>
+		The success of the final result will require a qualitative discussion of the tradeoffs between perceived realism of 
+		the procedural terrains, with the time it took to achieve each result. The end goal is to have a realistic world that 
+		is not prohibitively computationally expensive. There is no set balance between these two goals, however we will certainly 
+		time and compare each method. 
+
+		<h3>Aspirational Goals</h3>
+		There are many ways to create noise maps like gaussian, perlin and simplex noise. Each of these methods achieves a different outcome 
+		and sometimes different methods can be combineed together to create different levels of detail at different granularities. 
+
+		<h2>Schedule</h2>
+		<ul>
+			<li><b>Week 1:</b> Terrain generation with perlin noise algorithm and basic visualizations with pyvista</li>
+			<li><b>Week 2:</b> Apply style transfer with various real world height maps</li>
+			<li><b>Week 3:</b> Explore alternate noise generation algorithms</li>
+			<li><b>Week 4:</b> Benchmark and complete visualizations/demo</li>
+		</ul>
+
+		<h2>Resources</h2>
+		<a href="https://web3.arxiv.org/abs/2403.08782">Procedural terrain generation with style transfer</a> <br><br>
+		The main inspiration and reference for our project is the above paper “Procedural terrain generation with style 
+		transfer” by Fabio Merrizi. 
+		<br><br>
+		For physical resources we will plan to use a physical Nvidia 1080Ti GPU if necessary for the style transfer component. 
+		We may also leverage cloud computing resources through Google Colab. 
+		<br><br>
+		We will plan to use Python for the code logic, and use numpy, tensorflow, and scipy. For 3D terrain visualization in 
+		Python, pyvista for the 3D plotting and rioxarray for handling geospatial raster data will probably be useful, along 
+		with numpy again for computing and working with data.
+		<a href="https://spatial-dev.guru/2023/12/17/exploring-3d-terrain-visualization-with-python-a-dem-and-pyvista-tutorial/">
+			3D Terrain Visualization with Python
+		</a>
+	</body>
+</html>
