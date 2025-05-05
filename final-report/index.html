@@ -1,0 +1,225 @@
+<html>
+	<head>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=default'></script>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+		<style>
+			h1 {
+				text-align: center;
+			}
+
+			.container {
+				margin: 0 auto;
+				padding: 60px 20%;
+			}
+
+			figure {
+				text-align: center;
+			}
+
+			img {
+				display: inline-block;
+			}
+
+			body {
+				font-family: 'Inter', sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+		<h1>Team 49: Procedural Terrain Generation with Style Transfer</h1>
+		<div style="text-align: center;">
+			<h2>Final Project</h2>
+		</div>
+		<div style="text-align: center;">By Daniel Hodde, Gurvir Kooner, Richard Yang, Trustin Nguyen</div>
+
+		<br>
+
+		Link to webpage: <a href="https://hodde.dev/final-report">https://hodde.dev/final-report</a><br>
+		Link to Video: <a href="https://youtu.be/wEySsztIaB0">View Final Video</a><br>
+
+		<!-- Link to GitHub repository: <a href="https://github.com/cal-cs184-student/sp25-hw4-davir">https://github.com/cal-cs184-student/sp25-hw4-davir</a>-->
+
+		<h2>Abstract</h2>
+		In our project we create a procedural terrain generation system that leverages an interactive GUI allowing experimentation and customization. 
+		To create realistic 3D terrains different noise algorithms like Perlin, Simplex, Ridge, and Billow are combined with domain wrapping, erosion 
+		simulation, and neural style transfer. Using PyQt6 we created a user interface to allow for parameter adjustment and visualization using PyVista. 
+		Using TensorFlow's VGG19 model we were able to transfer real-world terrains into those procedurally generated. Ultimately, this project combines 
+		traditional procedural generation techniques to modern approaches leveraging machine learning to create realistic landscapes.
+
+		<h2>Technical Approach</h2>
+		For the base noise functions, we implemented Perlin, Simplex, Ridge, and Bellow noise. The techniques we used in all of them included sampling, interpolation, 
+		and hashing coordinates. In perlin noise, we computed the 4 nearest neighbors to a given sample on a uniform grid, each of which would contribute a gradient 
+		vector to the sample's value. Because we have 4 points, we interpolate the values along the x-axis and y-axis, a bilinear interpolation to get the height at 
+		that point. Simplex noise is very similar but rather than using the 4 nearest neighbors, we used the 3 nearest neighbors according to a simplex grid. A 
+		technical challenge in the algorithm involved skewing from a simplex grid to a rectangular grid and vice versa. And we did this by looking into the skew 
+		transformation and computing lengths through the geometry of the grid (not detailed in the source we used). In both algorithms, hashing is used to randomly 
+		assign a gradient vector to a grid coordinate. Perlin and simplex noise are often used to generate new forms of noise such as ridge and bellow noise. Noise 
+		generated from the perlin/simplex algorithm follows a smooth wave, so taking the absolute value of this noise gives bumps which we then invert to get sharp 
+		ridges (Ridge noise). A softer variant involves just taking the absolute value of the noise and exponentiating it. Since the bumps are valued between 0 and 1, 
+		a higher exponent levels the terrain (Bellow noise). 
+		<br><br>
+		To achieve more detail in our terrain, we used fractal brownian motion to add layers of noise from coarse to fine. In each iteration, we defined a falloff value 
+		while scaling up the resolution of the sampling.
+		<br><br>
+		Most of the noise generated from the base noise functions contain artifacts such as abrupt corners that follow a grid pattern. Something that adds more variation 
+		to the terrain would be to use a non-uniform grid of samples rather than a uniform one. So for domain warping, we took a uniform grid and added random noise 
+		in the x and y directions of each sample to modify the domain. Then we had our noise functions sample from this domain to produce wavy patterns. 
+		<br><br>
+		After generating and applying style to a heightmap, the terrain often appears mountainous and sharp. To alleviate this, we use erosion to smooth out the surface. 
+		The magnitude of the gradient of the terrain at a point represents how steep that surface is. Then to make steeper surfaces more level, we divide the height of 
+		the terrain by that magnitude. In our implementation, we simulated erosion iteratively using fractal brownian motion to avoid abrupt changes to the terrain height 
+		and allow for fine-grained adjustments. 
+		<br><br>
+		For neural style transfer we would use real-world height maps and the procedural noise images as content to apply the characteristics of real-world to our 
+		procedurally generated terrains. We used TensorFlow and the VGG19 model with custom loss functions. We used content weight for our content loss to preserve the 
+		procedural noise image used, a style weight for style loss loss to transfer the real-world characteristics, and a total variation weight for the total variation 
+		loss to preserve spatial continuity.
+		<br><br>
+		Our reference required an already generated noise image and a real-world style to transfer and had fixed parameters for the loss functions. We utilized a NASA database 
+		from the Shuttle Radar Topography Mission to get real-world height maps. This database allows us to search for height maps of any location on the globe, and thus allows 
+		us to quickly emulate terrain from a desired real world location. However, to boost the interactivity we created an interactive setup that allowed you to tune the weights 
+		for our loss function and generate different kinds of procedural noise on the fly before selecting the real-world style you wanted to apply. 
+
+		<h3>Problems Encountered</h3>
+		<ul>
+			<li>Our original code for noise generation and terrain plotting expected values between -1 and 1. However, the neural style transfer code expected it from 0 to 1. 
+				This wasn't immediately apparent and would lead to the program crashing. However, once we identified this issue we were able to properly integrate neural style 
+				transfer into our terrain generation pipeline.</li>
+			<li>Furthermore, for neural style transfer optimization was necessary. Luckily, tensorflow had built-in GPU support so by taking the time to use tensorflow-metal on MacOS 
+				we were able to significantly boost performance compared to just using the CPU. We also incorporated a worker thread style to prevent the UI from freezing as the style 
+				transfer was happening.</li>
+			<li>We also ran into issues when implementing tree generation. Initially when we tried to place the trees on the terrain, instead of placing the trees on top of the 
+				terrain, the trees would be added to the underlying geometry of the mountains, and warp the terrain in the shape of the trees. To fix this we had to add the trees 
+				as a separate mesh element on top of the terrain.
+			</li>
+		</ul>
+
+		<h3>Lessons Learned</h3>
+		During our project we learned how different traditional procedural generation methods can be used to create realistic terrains. Incorporating different methods like 
+		erosion simulation and fractal noise can significantly change how realistic terrains look. However, we also learned that combining these traditional approaches with machine 
+		learning can be used to make even more compelling results than using traditional methods alone.
+		
+		<h2>Results</h2>
+		The following redsults show the terrain generated using the various methods we implemented for terrain generation:
+		<br><br>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="perlin.png" width="400px"/>
+				  <figcaption>Perlin Noise</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="fractal-perlin.png" width="400px"/>
+				  <figcaption>Fractal Perlin Noise</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="simplex.png" width="400px"/>
+				  <figcaption>Simplex Noise</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="fractal-simplex.png" width="400px"/>
+				  <figcaption>Fractal Simplex Noise</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="ridge.png" width="400px"/>
+				  <figcaption>Ridge Noise</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="fractal-ridge.png" width="400px"/>
+				  <figcaption>Fractal Ridge Noise</figcaption>
+				</td>
+			  </tr>
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="billow.png" width="400px"/>
+				  <figcaption>Billow Noise</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="fractal-billow.png" width="400px"/>
+				  <figcaption>Fractal Billow Noise</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+		<br><br>
+
+		In addition to the noise functions we also implemented neural style transfer which allows us to transfer the style of a real-world terrain 
+		to our procedurally generated terrain. The results are shown below:
+		<br><br>
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="base_image.png" width="300px"/>
+				  <figcaption>Original Noise</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="himalaya.jpg" width="300px"/>
+				  <figcaption>Source Terrain</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="final_transferred_morphology.png" width="300px"/>
+				  <figcaption>Transferred Terrain</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<img src="style-transfer.png" width="500px" />
+			<figcaption style="text-align: center;">Terrain with style transferred</figcaption>
+		</div>
+		<br><br>
+		
+		Our platform also allows for interactivity with a simple animation of the terrain, the ability to zoom and pan around the terrain,
+		and the ability to edit parameters in real-time as seen below:
+		<br><br>
+
+		<div style="display: flex; flex-direction: column; align-items: center;">
+			<table style="width: 100%; text-align: center; border-collapse: collapse;">
+			  <tr>
+				<td style="text-align: center;">
+				  <img src="terrain-animation.gif" width="500px"/>
+				  <figcaption>Animated Terrain</figcaption>
+				</td>
+				<td style="text-align: center;">
+				  <img src="panning.gif" width="500px"/>
+				  <figcaption>Panning Terrain</figcaption>
+				</td>
+			  </tr>
+			</table>
+		</div>
+
+		<h2>References</h2>
+		<a href="https://www.youtube.com/watch?v=C9RyEiEzMiU">Ridge & Erosion</a><br>
+		<a href="https://github.com/stegu/perlin-noise/blob/master/simplexnoise.pdf">Simplex</a><br>
+		<a href="https://st4yho.me/domain-warping-an-interactive-introduction/">Domain warping</a><br>
+		<a href="https://web3.arxiv.org/pdf/2403.08782">Neural style transfer</a> * NOTE: this paper was used as inspiration for the project and although it includes 
+		a repo we did not utilize the repo as a starting point for our implementation. We implemented our own version that allows us experiment with different methods that 
+		allow for more control over the style transfer process and were not included in the original paper. <br>
+		<a href="https://search.earthdata.nasa.gov/search/granules?p=C2763266360-LPCLOUD&pg[0][v]=f&pg[0][gsk]=-start_date&g=G2821132324-LPCLOUD&q=C2763266360-LPCLOUD&sb[0]=82.50868%2C28.53994%2C83.33043%2C29.3302&tl=950702399.5!2!!&lat=28.5&long=83.5&zoom=9.923593657944501">Nasa shuttle radar topography mission</a><br>
+
+		<h2>Contrubutions</h2>
+		<ul>
+			<li><b>Gurvir Kooner</b>: For the technical portion Gurvir assisted with the initial perlin and fractal noise functions, implemented neural style transfer and modified 
+				to use custom noise functions as content input, and integrated the neural style transfer into the interactive GUI. Beyond the technical contributions, he was a 
+				key contributor to the reports and planning process for the project.
+			</li>
+			<li><b>Daniel Hodde</b>: Developed the perlin noise and fractal perlin noise generation, implemented the noise based tree 
+				generation, basic visualizations in PyVista and assisted with neural style transfer. In addition he found the initial paper that this project was inspired by and 
+				contributed to reports and planning. 
+			<li><b>Trustin Nguyen</b>: Wrote simplex, ridge, and bellow noise. Added erosion, domain warping. Wrote code for GUI. Contributed to reports and planning. 
+			<li><b>Richard Yang</b>: Richard researched effective resources and libraries to help visualize noise and height maps in Python, settling on PyVista for visualizing 
+				3D terrain with support for panning around the view and adding outside objects such as trees. He also experimented with creating 3D terrain-following meshes given 
+				a topographic surface and assisted with planning and writeups.
+			</li>
+		</ul>
+
+	</body>
+</html>
