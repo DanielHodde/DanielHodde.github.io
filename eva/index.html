@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sweetiebird Valentine 💕</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Fixed path backgrounds (one per screen, swapped by JS) -->
+    <div class="path-bg active" id="pathBg1">
+        <svg class="path-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="mist1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="white" stop-opacity="0"/>
+                    <stop offset="40%" stop-color="white" stop-opacity="0.4"/>
+                    <stop offset="60%" stop-color="white" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="white" stop-opacity="0"/>
+                </linearGradient>
+            </defs>
+            <!-- Distant Cascade range with snow caps -->
+            <path d="M 0 42 L 8 35 L 14 38 L 22 28 L 28 32 L 35 25 L 42 30 L 48 27 L 55 22 L 60 26 L 65 24 L 72 30 L 78 26 L 85 32 L 90 28 L 95 34 L 100 30 L 100 50 L 0 50 Z" fill="#7E9AB8"/>
+            <path d="M 22 28 L 25 30 L 28 32 L 26 31 Z" fill="#E8EEF4" opacity="0.9"/>
+            <path d="M 35 25 L 38 28 L 42 30 L 39 29 Z" fill="#E8EEF4" opacity="0.9"/>
+            <path d="M 53 23 L 55 22 L 58 24 L 60 26 L 57 25 Z" fill="#F0F4F8" opacity="0.8"/>
+            <path d="M 65 24 L 68 27 L 72 30 L 69 28 Z" fill="#E8EEF4" opacity="0.9"/>
+            <path d="M 88 29 L 90 28 L 93 31 L 95 34 Z" fill="#E8EEF4" opacity="0.8"/>
+
+            <!-- Mist band -->
+            <rect x="0" y="38" width="100" height="8" fill="url(#mist1)" opacity="0.5"/>
+
+            <!-- Mid-range forested mountains -->
+            <path d="M 0 55 L 3 48 L 6 50 L 8 46 L 10 48 L 12 44 L 14 46 L 16 42 L 18 44 L 20 40 L 22 42 L 24 39 L 26 41 L 28 43 L 30 40 L 32 42 L 34 38 L 36 40 L 38 37 L 40 39 L 42 41 L 44 38 L 46 40 L 48 36 L 50 38 L 52 40 L 54 37 L 56 39 L 58 41 L 60 38 L 62 40 L 64 42 L 66 39 L 68 41 L 70 43 L 72 40 L 74 42 L 76 39 L 78 41 L 80 44 L 82 41 L 84 43 L 86 45 L 88 42 L 90 44 L 92 46 L 94 43 L 96 45 L 98 47 L 100 44 L 100 60 L 0 60 Z" fill="#3B6B3B"/>
+
+            <!-- Near forest — taller jagged treeline -->
+            <path d="M 0 68 L 2 60 L 4 64 L 5 58 L 7 62 L 8 56 L 10 60 L 11 54 L 13 58 L 14 52 L 16 56 L 17 50 L 19 54 L 20 48 L 22 52 L 23 56 L 25 50 L 27 54 L 28 48 L 30 52 L 31 56 L 33 50 L 35 54 L 36 48 L 38 52 L 39 56 L 41 50 L 43 54 L 44 49 L 46 53 L 47 57 L 49 51 L 51 55 L 52 49 L 54 53 L 55 57 L 57 51 L 59 55 L 60 50 L 62 54 L 63 58 L 65 52 L 67 56 L 68 50 L 70 54 L 71 58 L 73 52 L 75 56 L 76 51 L 78 55 L 79 59 L 81 53 L 83 57 L 84 52 L 86 56 L 87 60 L 89 54 L 91 58 L 92 53 L 94 57 L 95 61 L 97 55 L 99 59 L 100 56 L 100 72 L 0 72 Z" fill="#2D5A2D"/>
+
+            <!-- Ground meadow -->
+            <path d="M 0 70 Q 25 67 50 70 Q 75 73 100 70 L 100 100 L 0 100 Z" fill="#4A7A3E"/>
+            <path d="M 0 76 Q 30 73 60 76 Q 80 78 100 75 L 100 100 L 0 100 Z" fill="#3D6B33" opacity="0.85"/>
+
+            <!-- Trail with shadow for depth (only up to halfway) -->
+            <path d="M 50 95 L 15 75 L 85 55 L 50 50"
+                  stroke="#6B5A47" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+            <path d="M 50 95 L 15 75 L 85 55 L 50 50"
+                  stroke="#8B7355" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <path d="M 50 95 L 15 75 L 85 55 L 50 50"
+                  stroke="#A08060" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+        </svg>
+    </div>
+    <div class="path-bg" id="pathBg2">
+        <svg class="path-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <!-- Prominent snow-capped peak (Rainier-like) -->
+            <path d="M 30 50 L 38 30 L 44 20 L 50 10 L 56 18 L 62 28 L 70 50 Z" fill="#8A9DB5"/>
+            <path d="M 38 30 L 44 20 L 50 10 L 56 18 L 62 28 L 58 30 L 54 25 L 50 15 L 46 23 L 42 28 Z" fill="#F0F4F8" opacity="0.9"/>
+            <path d="M 42 28 L 44 20 L 50 10 L 56 18 L 58 26 L 55 22 L 50 13 L 45 22 Z" fill="#FFFFFF" opacity="0.85"/>
+            <!-- Snow detail lines -->
+            <path d="M 36 34 L 40 28 L 43 32" stroke="#C8D8E8" stroke-width="0.3" fill="none" opacity="0.9"/>
+            <path d="M 60 32 L 57 26 L 63 34" stroke="#C8D8E8" stroke-width="0.3" fill="none" opacity="0.9"/>
+
+            <!-- Distant rocky ridge -->
+            <path d="M 0 50 L 5 44 L 10 47 L 15 42 L 20 45 L 25 48 L 28 44 L 32 47 L 68 47 L 72 43 L 76 46 L 80 42 L 85 45 L 90 41 L 95 44 L 100 47 L 100 55 L 0 55 Z" fill="#7A8FA5"/>
+
+            <!-- Alpine rocky terrain -->
+            <path d="M 0 62 L 5 55 L 10 58 L 15 52 L 20 56 L 25 50 L 30 54 L 35 48 L 40 52 L 45 49 L 50 53 L 55 47 L 60 51 L 65 48 L 70 52 L 75 49 L 80 53 L 85 50 L 90 54 L 95 51 L 100 55 L 100 68 L 0 68 Z" fill="#7A8570"/>
+            <!-- Rocky color patches -->
+            <path d="M 10 58 L 20 56 L 25 60 L 15 62 Z" fill="#8B8474" opacity="0.7"/>
+            <path d="M 40 52 L 50 53 L 55 58 L 42 57 Z" fill="#6E7A64" opacity="0.6"/>
+            <path d="M 70 52 L 80 53 L 82 58 L 72 57 Z" fill="#8B8474" opacity="0.6"/>
+
+            <!-- Sparse treeline — individual small evergreens -->
+            <path d="M 12 65 L 14 58 L 16 65 Z" fill="#3B5E3B"/>
+            <path d="M 13 65 L 14 60 L 15 65 Z" fill="#2D4A2D" opacity="0.8"/>
+            <path d="M 25 66 L 27 60 L 29 66 Z" fill="#3B5E3B"/>
+            <path d="M 26 66 L 27 62 L 28 66 Z" fill="#2D4A2D" opacity="0.7"/>
+            <path d="M 38 64 L 40 57 L 42 64 Z" fill="#3B5E3B"/>
+            <path d="M 39 64 L 40 59 L 41 64 Z" fill="#2D4A2D" opacity="0.8"/>
+            <path d="M 58 65 L 60 59 L 62 65 Z" fill="#3B5E3B"/>
+            <path d="M 59 65 L 60 61 L 61 65 Z" fill="#2D4A2D" opacity="0.7"/>
+            <path d="M 75 66 L 77 60 L 79 66 Z" fill="#3B5E3B"/>
+            <path d="M 76 66 L 77 62 L 78 66 Z" fill="#2D4A2D" opacity="0.8"/>
+            <path d="M 88 65 L 90 59 L 92 65 Z" fill="#3B5E3B"/>
+            <path d="M 89 65 L 90 61 L 91 65 Z" fill="#2D4A2D" opacity="0.7"/>
+
+            <!-- Rocky ground -->
+            <path d="M 0 66 Q 25 63 50 66 Q 75 69 100 65 L 100 100 L 0 100 Z" fill="#7A8570"/>
+            <path d="M 0 72 Q 20 69 40 72 Q 60 74 80 71 Q 90 70 100 72 L 100 100 L 0 100 Z" fill="#6E7A64" opacity="0.85"/>
+            <!-- Alpine green patches -->
+            <path d="M 5 78 Q 15 75 25 78 Q 30 80 20 80 Z" fill="#5A7A4A" opacity="0.6"/>
+            <path d="M 55 76 Q 65 73 75 76 Q 80 78 60 79 Z" fill="#5A7A4A" opacity="0.5"/>
+            <path d="M 35 82 Q 45 79 55 82 Q 50 84 38 84 Z" fill="#5A7A4A" opacity="0.5"/>
+
+            <!-- Trail with shadow for depth (only up to halfway) -->
+            <path d="M 50 95 L 85 75 L 15 55 L 50 50"
+                  stroke="#6B5A47" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.35"/>
+            <path d="M 50 95 L 85 75 L 15 55 L 50 50"
+                  stroke="#8B7355" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"/>
+            <path d="M 50 95 L 85 75 L 15 55 L 50 50"
+                  stroke="#A08060" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+        </svg>
+    </div>
+    <div class="path-bg" id="pathBg3">
+        <svg class="path-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <!-- Sky gradient fill backdrop -->
+            <rect width="100" height="100" fill="url(#skyGradient3)"/>
+            <defs>
+                <linearGradient id="skyGradient3" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#87CEEB"/>
+                    <stop offset="50%" stop-color="#B0E0E6"/>
+                    <stop offset="100%" stop-color="#FFB6C1"/>
+                </linearGradient>
+            </defs>
+
+            <!-- Distant far mountains (very faded) -->
+            <path d="M 0 45 Q 20 35 40 40 Q 60 32 80 40 Q 90 35 100 42 L 100 65 L 0 65 Z" fill="#A8B5D1" opacity="0.5"/>
+
+            <!-- Mid-range snow-capped mountains left -->
+            <path d="M 0 50 L 15 30 L 25 40 L 35 25 L 42 38 L 0 60 Z" fill="#8A9DB5"/>
+            <path d="M 8 38 L 15 30 L 22 35 Z" fill="#E8EEF4" opacity="0.8"/>
+            <path d="M 28 32 L 35 25 L 40 32 Z" fill="#F0F4F8" opacity="0.7"/>
+
+            <!-- Mid-range snow-capped mountains right -->
+            <path d="M 58 38 L 65 25 L 75 30 L 85 40 L 100 50 L 100 60 L 58 60 Z" fill="#8A9DB5"/>
+            <path d="M 62 35 L 65 25 L 70 32 Z" fill="#E8EEF4" opacity="0.8"/>
+            <path d="M 72 28 L 75 30 L 78 38 Z" fill="#F0F4F8" opacity="0.7"/>
+
+            <!-- Foreground rocky peaks (current peak you're standing on) -->
+            <path d="M 0 60 L 12 35 L 28 42 L 40 30 L 50 28 L 60 32 L 72 42 L 88 38 L 100 60 L 100 100 L 0 100 Z" fill="#7A8570"/>
+            <path d="M 6 58 L 12 35 L 18 50 Z" fill="#8B8B8B" opacity="0.6"/>
+            <path d="M 32 48 L 40 30 L 48 42 Z" fill="#9A9A9A" opacity="0.5"/>
+            <path d="M 55 35 L 60 32 L 68 40 Z" fill="#8B8B8B" opacity="0.6"/>
+            <path d="M 75 42 L 88 38 L 95 55 Z" fill="#9A9A9A" opacity="0.5"/>
+
+            <!-- Alpine vegetation patches -->
+            <path d="M 8 70 Q 15 68 22 72 Q 18 74 12 72 Z" fill="#5A7A4A" opacity="0.6"/>
+            <path d="M 35 75 Q 45 72 55 76 Q 48 78 40 77 Z" fill="#5A7A4A" opacity="0.5"/>
+            <path d="M 70 73 Q 80 70 92 74 Q 85 76 75 74 Z" fill="#5A7A4A" opacity="0.6"/>
+
+            <!-- Ground/standing area -->
+            <path d="M 0 75 Q 25 73 50 75 Q 75 77 100 75 L 100 100 L 0 100 Z" fill="#4A6A32"/>
+            <path d="M 0 82 Q 30 80 60 83 Q 80 84 100 81 L 100 100 L 0 100 Z" fill="#3D5A2A" opacity="0.8"/>
+
+            <!-- Clouds/mist -->
+            <ellipse cx="20" cy="25" rx="15" ry="8" fill="white" opacity="0.3"/>
+            <ellipse cx="75" cy="20" rx="18" ry="10" fill="white" opacity="0.25"/>
+        </svg>
+        <div class="peak-sign">
+            <h1 class="peak-text">Will you be my Valentine?</h1>
+            <div class="button-container">
+                <button class="btn btn-yes" id="btnYes">Yes 💕</button>
+                <button class="btn btn-no" id="btnNo">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll Prompt -->
+    <div class="scroll-prompt" id="scrollPrompt">
+        <p>Scroll to walk through our memories ↓</p>
+    </div>
+
+    <!-- Flamingo Character (fixed, climbs across screens) -->
+    <img src="assets/sweetiebird-hike.png" alt="Flamingo" id="flamingo" class="flamingo">
+
+    <!-- Scroll spacer (provides scroll room for all screens) -->
+    <div class="scroll-spacer"></div>
+
+    <!-- Memory Card Overlays (fixed, slide down from top) -->
+    <div class="memory-overlay" id="memory-1">
+        <div class="memory-card">
+            <img src="assets/memory-1.jpeg" alt="Memory 1" class="memory-image">
+            <p class="memory-text"></p>
+        </div>
+    </div>
+    <div class="memory-overlay" id="memory-2">
+        <div class="memory-card">
+            <img src="assets/memory-2.jpeg" alt="Memory 2" class="memory-image">
+            <p class="memory-text"></p>
+        </div>
+    </div>
+    <div class="memory-overlay" id="memory-3">
+        <div class="memory-card">
+            <img src="assets/memory-3.jpeg" alt="Memory 3" class="memory-image">
+            <p class="memory-text"></p>
+        </div>
+    </div>
+    <div class="memory-overlay" id="memory-4">
+        <div class="memory-card">
+            <img src="assets/memory-4.jpeg" alt="Memory 4" class="memory-image">
+            <p class="memory-text"></p>
+        </div>
+    </div>
+    <div class="memory-overlay" id="memory-5">
+        <div class="memory-card">
+            <img src="assets/memory-5.jpeg" alt="Memory 5" class="memory-image">
+            <p class="memory-text"></p>
+        </div>
+    </div>
+    <div class="memory-overlay" id="memory-6">
+        <div class="memory-card">
+            <img src="assets/memory-6.jpeg" alt="Memory 6" class="memory-image">
+            <p class="memory-text"></p>
+        </div>
+    </div>
+
+    <!-- Celebration Modal -->
+    <div class="modal hidden" id="celebrationModal">
+        <div class="modal-content">
+            <h2>You said Yes! 🎉💕</h2>
+            <p>I love you! 🦩</p>
+            <button class="btn btn-close" id="btnClose">Close</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
